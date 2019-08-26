@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -110,21 +111,9 @@ int main(void)
   MX_TIM15_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+    deskoveryInit();
 
-    deskoveryMotor(500, 0, false);
-    HAL_Delay(1000);
-
-    deskoveryMotor(-500, 0, false);
-    HAL_Delay(1000);
-
-    deskoveryMotor(200,500, false);
-    HAL_Delay(1000);
-
-    deskoveryMotor(200,-500, false);
-    HAL_Delay(1000);
-
-    deskoveryMotor(0,00, false);
-    /* USER CODE END 2 */
+  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -135,6 +124,18 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+      long l = left_ticks;
+      long r = right_ticks;
+      deskoveryMotor(400, 400, false);
+      while ((left_ticks + right_ticks - l - r) < 2000) {}
+
+      r = right_ticks;
+      deskoveryMotor(0, 300, false);
+      while ((right_ticks - r ) < 866) {}
+
+      deskoveryMotor(0, 0, false);
+      HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+      HAL_Delay(100);
   }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */
@@ -334,7 +335,7 @@ static void MX_TIM5_Init(void)
   htim5.Instance = TIM5;
   htim5.Init.Prescaler = 0;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim5.Init.Period = 0;
+  htim5.Init.Period = 65535;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
@@ -383,7 +384,7 @@ static void MX_TIM8_Init(void)
   htim8.Instance = TIM8;
   htim8.Init.Prescaler = 0;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim8.Init.Period = 0;
+  htim8.Init.Period = 65535;
   htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim8.Init.RepetitionCounter = 0;
   htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -592,7 +593,15 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+    MX_GPIO_Init();
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    while(true)
+    {
+        HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+        HAL_Delay(200);
+    }
+#pragma clang diagnostic pop
   /* USER CODE END Error_Handler_Debug */
 }
 
