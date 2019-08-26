@@ -56,6 +56,8 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void deskoveryInit(void);
+void deskoveryReadEncoders(void);
 bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 /* USER CODE END EFP */
 
@@ -101,9 +103,18 @@ bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+
 #define HMOTOR_TIM htim15
+
 #define ML_TIM_CH TIM_CHANNEL_1
 #define MR_TIM_CH TIM_CHANNEL_2
+
+#define EL_TIM htim5
+#define ER_TIM htim8
+
+extern volatile long left_ticks;
+extern volatile long right_ticks;
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
