@@ -23,8 +23,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
-#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,7 +70,57 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void setupSensor(VL53L1_DEV dev) {
+    uint16_t wordData;
+    uint8_t byteData;
+    __unused int status = 0;
 
+/* Those basic I2C read functions can be used to check your own I2C functions */
+    status += VL53L1_RdByte(dev, 0x010F, &byteData);
+    printf("VL53L1X Model_ID: %X\n", byteData);
+    status += VL53L1_RdByte(dev, 0x0110, &byteData);
+    printf("VL53L1X Module_Type: %X\n", byteData);
+    status += VL53L1_RdWord(dev, 0x010F, &wordData);
+    printf("VL53L1X: %X\n", wordData);
+    status += VL53L1_WaitDeviceBooted(dev);
+    printf("Chip booted\n");
+
+    /* This function must to be called to initialize the sensor with the default setting  */
+    status += VL53L1_DataInit(dev);
+    status += VL53L1_StaticInit(dev);
+    /* Optional functions to be used to change the main ranging parameters according the application requirements to get the best ranging performances */
+    status += VL53L1_SetPresetMode(dev, VL53L1_PRESETMODE_LITE_RANGING);
+    status += VL53L1_SetDistanceMode(dev, VL53L1_DISTANCEMODE_SHORT);
+    status += VL53L1_SetMeasurementTimingBudgetMicroSeconds(dev, 10000);
+    status += VL53L1_SetInterMeasurementPeriodMilliSeconds(dev, 0);
+
+
+//  status = VL53L1X_SetOffset(dev,20); /* offset compensation in mm */
+//  status = VL53L1X_SetROI(dev, 16, 16); /* minimum ROI 4,4 */
+//	status = VL53L1X_CalibrateOffset(dev, 140, &offset); /* may take few second to perform the offset cal*/
+//	status = VL53L1X_CalibrateXtalk(dev, 1000, &xtalk); /* may take few second to perform the xtalk cal */
+    status += VL53L1_StartMeasurement(dev);   /* This function has to be called to enable the ranging */
+
+    if (status) Error_Handler();
+}
+VL53L1_Dev_t centerSensor = {
+        .I2cDevAddr = 0x52,
+        .new_data_ready_poll_duration_ms = 1000,
+};
+__unused int status = 0;
+
+void runRadar() {
+    VL53L1_RangingMeasurementData_t data;
+
+    status += VL53L1_WaitMeasurementDataReady(&centerSensor);
+    status += VL53L1_GetRangingMeasurementData(&centerSensor, &data);
+    VL53L1_ClearInterruptAndStartMeasurement(&centerSensor);
+
+}
+
+void VLO53L1A1_ResetPin(int state) {
+    HAL_GPIO_WritePin(VL53_RST_GPIO_Port, VL53_RST_Pin, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
 /* USER CODE END 0 */
 
 /**
@@ -113,6 +161,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
     deskoveryInit();
 
+    VLO53L1A1_ResetPin(0); // Shutdown center sensor
+    HAL_Delay(2);
+    VLO53L1A1_ResetPin(1); // run center sensor
+
+    setupSensor(&centerSensor);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,6 +177,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+      runRadar();
       long l = left_ticks;
       long r = right_ticks;
       deskoveryMotor(400, 400, false);
@@ -217,7 +271,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE END ADC1_Init 0 */
 
   ADC_MultiModeTypeDef multimode = {0};
-  ADC_ChannelConfTypeDef sConfig = {0};
+  ADC_InjectionConfTypeDef sConfigInjected = {0};
 
   /* USER CODE BEGIN ADC1_Init 1 */
 
@@ -228,14 +282,12 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc1.Init.OversamplingMode = DISABLE;
@@ -250,15 +302,46 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure Regular Channel 
+  /** Configure Injected Channel 
   */
-  sConfig.Channel = ADC_CHANNEL_4;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
-  sConfig.SingleDiff = ADC_SINGLE_ENDED;
-  sConfig.OffsetNumber = ADC_OFFSET_NONE;
-  sConfig.Offset = 0;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_1;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
+  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
+  sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
+  sConfigInjected.InjectedOffset = 0;
+  sConfigInjected.InjectedNbrOfConversion = 4;
+  sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
+  sConfigInjected.AutoInjectedConv = DISABLE;
+  sConfigInjected.QueueInjectedContext = DISABLE;
+  sConfigInjected.ExternalTrigInjecConv = ADC_INJECTED_SOFTWARE_START;
+  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONV_EDGE_NONE;
+  sConfigInjected.InjecOversamplingMode = DISABLE;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Injected Channel 
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_2;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Injected Channel 
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_3;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_3;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Injected Channel 
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_4;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_4;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
   {
     Error_Handler();
   }
