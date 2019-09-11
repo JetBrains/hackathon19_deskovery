@@ -165,7 +165,7 @@ int main(void)
     HAL_Delay(2);
     VLO53L1A1_ResetPin(1); // run center sensor
 
-//    setupSensor(&centerSensor);
+    setupSensor(&centerSensor);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -178,8 +178,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(PRX_EN_GPIO_Port,PRX_EN_Pin);
-      HAL_Delay(2);
-//    HAL_GPIO_WritePin(PRX_EN_GPIO_Port,PRX_EN_Pin, GPIO_PIN_SET);
+    HAL_Delay(1);
     HAL_ADCEx_InjectedStart(&hadc1);
 
       HAL_StatusTypeDef adcStatus = HAL_ADCEx_InjectedPollForConversion(&hadc1, 100);
@@ -196,7 +195,7 @@ int main(void)
       }
 
     HAL_Delay(200);
-//      runRadar();
+      runRadar();
 //      long l = left_ticks;
 //      long r = right_ticks;
 //      deskoveryMotor(400, 400, false);
