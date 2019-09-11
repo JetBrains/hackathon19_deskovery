@@ -85,6 +85,8 @@ bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define PRX_EN_Pin GPIO_PIN_0
+#define PRX_EN_GPIO_Port GPIOB
 #define MR_DIR_Pin GPIO_PIN_1
 #define MR_DIR_GPIO_Port GPIOB
 #define ML_DIR_Pin GPIO_PIN_13

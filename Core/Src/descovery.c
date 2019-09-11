@@ -9,6 +9,9 @@ extern TIM_HandleTypeDef ER_TIM;
 volatile long left_ticks = 0;
 volatile long right_ticks = 0;
 
+extern UART_HandleTypeDef huart2;
+
+
 static inline void runMotorChannel(int pwr, GPIO_TypeDef * dirPort, uint16_t dirPin, uint16_t motorChannel) {
     if(pwr >= 0) {
         HAL_GPIO_WritePin(dirPort,dirPin,GPIO_PIN_RESET);
@@ -43,4 +46,7 @@ void deskoveryReadEncoders() {
     __HAL_TIM_SET_COMPARE(&ER_TIM,TIM_CHANNEL_2,0);
 }
 
+__unused int _write(int file, char *ptr, int len) {
+    HAL_UART_Transmit(&huart2,ptr,len,200);
+}
 

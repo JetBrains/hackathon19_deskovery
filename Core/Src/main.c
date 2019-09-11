@@ -165,7 +165,7 @@ int main(void)
     HAL_Delay(2);
     VLO53L1A1_ResetPin(1); // run center sensor
 
-    setupSensor(&centerSensor);
+//    setupSensor(&centerSensor);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -177,19 +177,38 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-      runRadar();
-      long l = left_ticks;
-      long r = right_ticks;
-      deskoveryMotor(400, 400, false);
-      while ((left_ticks + right_ticks - l - r) < 2000) {}
+    HAL_GPIO_TogglePin(PRX_EN_GPIO_Port,PRX_EN_Pin);
+      HAL_Delay(2);
+//    HAL_GPIO_WritePin(PRX_EN_GPIO_Port,PRX_EN_Pin, GPIO_PIN_SET);
+    HAL_ADCEx_InjectedStart(&hadc1);
 
-      r = right_ticks;
-      deskoveryMotor(0, 300, false);
-      while ((right_ticks - r ) < 866) {}
+      HAL_StatusTypeDef adcStatus = HAL_ADCEx_InjectedPollForConversion(&hadc1, 100);
 
-      deskoveryMotor(0, 0, false);
-      HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-      HAL_Delay(100);
+      if(adcStatus != HAL_OK) {
+          printf("ADC error %d...\n", adcStatus);
+      } else {
+          printf("ADC results: %5d %5d %5d %5d\n",
+                 (int)HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_1),
+                 (int) HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_2),
+                 (int)HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_3),
+                 (int)HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_4)
+                  );
+      }
+
+    HAL_Delay(200);
+//      runRadar();
+//      long l = left_ticks;
+//      long r = right_ticks;
+//      deskoveryMotor(400, 400, false);
+//      while ((left_ticks + right_ticks - l - r) < 2000) {}
+//
+//      r = right_ticks;
+//      deskoveryMotor(0, 300, false);
+//      while ((right_ticks - r ) < 866) {}
+//
+//      deskoveryMotor(0, 0, false);
+//      HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+//      HAL_Delay(100);
   }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */
@@ -630,7 +649,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, MR_DIR_Pin|ML_DIR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, PRX_EN_Pin|MR_DIR_Pin|ML_DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(VL53_RST_GPIO_Port, VL53_RST_Pin, GPIO_PIN_RESET);
@@ -648,8 +667,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MR_DIR_Pin ML_DIR_Pin */
-  GPIO_InitStruct.Pin = MR_DIR_Pin|ML_DIR_Pin;
+  /*Configure GPIO pins : PRX_EN_Pin MR_DIR_Pin ML_DIR_Pin */
+  GPIO_InitStruct.Pin = PRX_EN_Pin|MR_DIR_Pin|ML_DIR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
