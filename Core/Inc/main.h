@@ -41,6 +41,13 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef struct {
+    volatile int alarmRatio10 ;
+    volatile bool alarms[4];
+    volatile bool alarm;
+    volatile int darkResponse[4];
+    volatile int lightResponse[4];
+} PrxData;
 
 /* USER CODE END ET */
 
@@ -128,8 +135,14 @@ bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 #define EL_TIM htim5
 #define ER_TIM htim8
 
+#define PRX_FL 3
+#define PRX_FR 1
+#define PRX_BL 0
+#define PRX_BR 2
+
 extern volatile long left_ticks;
 extern volatile long right_ticks;
+extern volatile PrxData prxData;
 
 /* USER CODE END Private defines */
 

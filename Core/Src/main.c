@@ -140,6 +140,18 @@ void measureAll() {
     snprintf(buf, sizeof(buf),"R Enc: %07ld", right_ticks);
     LCD5110_set_XY(0,2);
     LCD5110_write_string(buf);
+
+    LCD5110_set_XY(3,3);
+    LCD5110_write_char(prxData.alarms[PRX_BR] ?'A':'.');
+
+    LCD5110_set_XY(4,3);
+    LCD5110_write_char(prxData.alarms[PRX_BL] ?'A':'.');
+
+    LCD5110_set_XY(3,4);
+    LCD5110_write_char(prxData.alarms[PRX_FR] ?'A':'.');
+
+    LCD5110_set_XY(4,4);
+    LCD5110_write_char(prxData.alarms[PRX_FL] ?'A':'.');
 }
 
 /* USER CODE END 0 */
@@ -188,6 +200,7 @@ int main(void)
     HAL_Delay(2);
     VLO53L1A1_ResetPin(1); // run center sensor
     HAL_Delay(2);
+    HAL_ADCEx_InjectedStart_IT(&hadc1);
 
     setupSensor(&centerSensor);
     LCD5110_init();
@@ -204,7 +217,6 @@ int main(void)
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(PRX_EN_GPIO_Port,PRX_EN_Pin);
     HAL_Delay(1);
-    HAL_ADCEx_InjectedStart(&hadc1);
 
       HAL_StatusTypeDef adcStatus = HAL_ADCEx_InjectedPollForConversion(&hadc1, 100);
 
@@ -322,11 +334,11 @@ static void MX_ADC1_Init(void)
   /** Common config 
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV256;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.NbrOfConversion = 1;
@@ -349,7 +361,7 @@ static void MX_ADC1_Init(void)
   */
   sConfigInjected.InjectedChannel = ADC_CHANNEL_1;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
-  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_640CYCLES_5;
   sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
   sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
   sConfigInjected.InjectedOffset = 0;
