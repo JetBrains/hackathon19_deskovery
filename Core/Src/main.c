@@ -69,6 +69,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
+void measureAll(void);
 
 /* USER CODE END PFP */
 
@@ -113,18 +114,34 @@ VL53L1_Dev_t centerSensor = {
 };
 __unused int status = 0;
 
-void runRadar() {
+int runRadar() {
     VL53L1_RangingMeasurementData_t data;
 
     status += VL53L1_WaitMeasurementDataReady(&centerSensor);
     status += VL53L1_GetRangingMeasurementData(&centerSensor, &data);
     VL53L1_ClearInterruptAndStartMeasurement(&centerSensor);
-
+    return data.RangeStatus == 0 ? data.RangeMilliMeter : -1;
 }
 
 void VLO53L1A1_ResetPin(int state) {
     HAL_GPIO_WritePin(VL53_RST_GPIO_Port, VL53_RST_Pin, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
+void measureAll() {
+    char buf[100];
+    int dist = runRadar();
+    snprintf(buf, sizeof(buf),"Dist: %05dmm", dist);
+    LCD5110_set_XY(0,0);
+    LCD5110_write_string(buf);
+
+    snprintf(buf, sizeof(buf),"L Enc: %07ld", left_ticks);
+    LCD5110_set_XY(0,1);
+    LCD5110_write_string(buf);
+
+    snprintf(buf, sizeof(buf),"R Enc: %07ld", right_ticks);
+    LCD5110_set_XY(0,2);
+    LCD5110_write_string(buf);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -174,8 +191,6 @@ int main(void)
 
     setupSensor(&centerSensor);
     LCD5110_init();
-    LCD5110_set_XY(1,1);
-    LCD5110_write_string("Test");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -205,21 +220,25 @@ int main(void)
       }
 
     HAL_Delay(200);
-//      HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+      HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
       __HAL_TIM_SET_COMPARE(&htim1,  TIM_CHANNEL_3, 99);
-      runRadar();
-//      long l = left_ticks;
-//      long r = right_ticks;
-//      deskoveryMotor(400, 400, false);
-//      while ((left_ticks + right_ticks - l - r) < 2000) {}
-//
-//      r = right_ticks;
-//      deskoveryMotor(0, 300, false);
-//      while ((right_ticks - r ) < 866) {}
-//
-//      deskoveryMotor(0, 0, false);
-//      HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-//      HAL_Delay(100);
+      long l = left_ticks;
+      long r = right_ticks;
+      deskoveryMotor(400, 400, false);
+      while ((left_ticks + right_ticks - l - r) < 2000) {
+          measureAll();
+      }
+
+      r = right_ticks;
+      deskoveryMotor(0, 300, false);
+      while ((right_ticks - r ) < 866) {
+          measureAll();
+      }
+
+      deskoveryMotor(0, 0, false);
+      HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+
+      HAL_Delay(100);
   }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */

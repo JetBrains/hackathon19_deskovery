@@ -7,11 +7,11 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char LCD5110_MOde);
 void LCD5110_LCD_delay_ms(unsigned int t);
 
 //Define the hardware operation function
-void LCD5110_SCK(unsigned char temp);
-void LCD5110_MO(unsigned char temp);
-void LCD5110_CS(unsigned char temp);
-void LCD5110_RST(unsigned char temp);
-void LCD5110_DC(unsigned char temp);
+void inline LCD5110_SCK(unsigned char temp);
+void inline LCD5110_MO(unsigned char temp);
+void inline LCD5110_CS(unsigned char temp);
+void inline LCD5110_RST(unsigned char temp);
+void inline LCD5110_DC(unsigned char temp);
 
 
 
@@ -55,13 +55,10 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 		LCD5110_MO(dat & 0x80);//SPI_MO = dat & 0x80;
 		dat = dat<<1;
 		LCD5110_SCK(0);//SPI_SCK = 0;
-        HAL_Delay(1);
         LCD5110_SCK(1);//SPI_SCK = 1;
-        HAL_Delay(1);
 	}
 
 	LCD5110_CS(1);//SPI_CS = 1;
-    HAL_Delay(1);
 
 }
 

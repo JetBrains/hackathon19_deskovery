@@ -24,6 +24,7 @@ static inline void runMotorChannel(int pwr, GPIO_TypeDef * dirPort, uint16_t dir
 }
 bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery) {
     //todo recovery mode
+            return true;
     runMotorChannel(pwrLeft,ML_DIR_GPIO_Port,ML_DIR_Pin,ML_TIM_CH);
     runMotorChannel(pwrRight,MR_DIR_GPIO_Port,MR_DIR_Pin,MR_TIM_CH);
     return true;
