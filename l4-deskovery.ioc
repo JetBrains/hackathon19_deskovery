@@ -87,6 +87,7 @@ Mcu.UserConstants=
 Mcu.UserName=STM32L476RGTx
 MxCube.Version=5.3.0
 MxDb.Version=DB.5.0.30
+NVIC.ADC1_2_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.BusFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.HardFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false
