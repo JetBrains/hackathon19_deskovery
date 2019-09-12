@@ -36,6 +36,7 @@ extern "C" {
 #include <stdio.h>
 #include <string.h>
 #include "vl53l1_api.h"
+#include "LCD.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -89,6 +90,8 @@ bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 #define PRX_EN_GPIO_Port GPIOB
 #define MR_DIR_Pin GPIO_PIN_1
 #define MR_DIR_GPIO_Port GPIOB
+#define DISP_CE_Pin GPIO_PIN_10
+#define DISP_CE_GPIO_Port GPIOB
 #define ML_DIR_Pin GPIO_PIN_13
 #define ML_DIR_GPIO_Port GPIOB
 #define ML_PWM_Pin GPIO_PIN_14
@@ -101,12 +104,20 @@ bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 #define ENC_R2_GPIO_Port GPIOC
 #define VL53_RST_Pin GPIO_PIN_8
 #define VL53_RST_GPIO_Port GPIOC
+#define DISP_NRST_Pin GPIO_PIN_8
+#define DISP_NRST_GPIO_Port GPIOA
+#define DISP_BG_Pin GPIO_PIN_10
+#define DISP_BG_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define SWO_Pin GPIO_PIN_3
-#define SWO_GPIO_Port GPIOB
+#define DISP_CLK_Pin GPIO_PIN_3
+#define DISP_CLK_GPIO_Port GPIOB
+#define DISP_DC_Pin GPIO_PIN_4
+#define DISP_DC_GPIO_Port GPIOB
+#define DISP_DIN_Pin GPIO_PIN_5
+#define DISP_DIN_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 #define HMOTOR_TIM htim15

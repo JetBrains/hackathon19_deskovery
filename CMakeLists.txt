@@ -31,7 +31,7 @@ SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections,--print-memory-usage -T ${LINK
 PROJECT(l4-deskovery C CXX ASM)
 set(CMAKE_CXX_STANDARD 11)
 
-add_definitions(-D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DUSE_HAL_DRIVER -DSTM32L476xx -DUSE_I2C_2V8)
+add_definitions(-D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DUSE_HAL_DRIVER -DSTM32L476xx)
 
 file(GLOB_RECURSE SOURCES "startup/*.*" "Drivers/*.*" "Core/*.*")
 file(GLOB_RECURSE VL53L1_SOURCES "vl53l1x/*.*")
