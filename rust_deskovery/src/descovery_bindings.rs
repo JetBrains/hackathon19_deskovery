@@ -107,5 +107,8 @@ extern "C" {
     pub fn LCD5110_set_XY(X: crate::libc::c_uchar, Y: crate::libc::c_uchar);
 }
 extern "C" {
-    pub fn LCD5110_write_string(s: *mut crate::libc::c_char);
+    pub fn LCD5110_write_string(s: *const crate::libc::c_uchar);
+}
+extern "C" {
+    pub fn delayMs(ms: crate::libc::c_long);
 }
