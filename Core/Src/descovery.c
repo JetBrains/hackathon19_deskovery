@@ -3,6 +3,7 @@
 //
 #include "main.h"
 
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef HMOTOR_TIM;
 extern TIM_HandleTypeDef EL_TIM;
 extern TIM_HandleTypeDef ER_TIM;
@@ -66,38 +67,54 @@ void HAL_ADCEx_InjectedConvCpltCallback(__unused ADC_HandleTypeDef *hadc) {
     HAL_ADCEx_InjectedStart_IT(&hadc1);
 }
 
-int getADCInjectedRank1Value() {
-  return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+__unused int getADCInjectedRank1Value() {
+    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
 }
 
-int getADCInjectedRank2Value() {
-  return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+__unused int getADCInjectedRank2Value() {
+    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
 }
 
-int getADCInjectedRank3Value() {
-  return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
+__unused int getADCInjectedRank3Value() {
+    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
 }
 
-int getADCInjectedRank4Value() {
-  return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_4);
+__unused int getADCInjectedRank4Value() {
+    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_4);
 }
 
-void motorTimerStopChannel1() {
-  HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_1);
+__unused void motorTimerStopChannel1() {
+    HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_1);
 }
 
-void motorTimerStopChannel2() {
-  HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_2);
+__unused void motorTimerStopChannel2() {
+    HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_2);
 }
 
-void motorTimerStartChannel1() {
-  HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_1);
+__unused void motorTimerStartChannel1() {
+    HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_1);
 }
 
-void motorTimerStartChannel2() {
-  HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_2);;
+__unused void motorTimerStartChannel2() {
+    HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_2);;
 }
 
-void ledControl(bool on) {
-    HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin, on ? GPIO_PIN_SET: GPIO_PIN_RESET);
+__unused void ledControl(bool on) {
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
+
+__unused void delayMs(long ms) {
+    HAL_Delay(ms);
+}
+
+__unused void displayBgControl(int brightness) {
+    if (brightness < 0) {
+        brightness = 0;
+    } else if (brightness > 99) {
+        brightness = 99;
+    }
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 99 - brightness);
+    HAL_TIM_PWM_Start(&htim1,  TIM_CHANNEL_3);
+
+}
+
