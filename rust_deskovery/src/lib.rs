@@ -38,30 +38,3 @@ pub extern "C" fn rust_main() {
         }
     }
 }
-
-#[no_mangle]
-pub unsafe extern "C" fn update_prx_data(prx_led_on: bool) {
-    if prx_led_on {
-        prxData.lightResponse[0] = getADCInjectedRank1Value();
-        prxData.lightResponse[1] = getADCInjectedRank2Value();
-        prxData.lightResponse[2] = getADCInjectedRank3Value();
-        prxData.lightResponse[3] = getADCInjectedRank4Value();
-        prxData.alarms[0] = (prxData.darkResponse[0] * 10 / (prxData.lightResponse[0] + 1)) < prxData.alarmRatio10;
-        prxData.alarms[1] = (prxData.darkResponse[1] * 10 / (prxData.lightResponse[1] + 1)) < prxData.alarmRatio10;
-        prxData.alarms[2] = (prxData.darkResponse[2] * 10 / (prxData.lightResponse[2] + 1)) < prxData.alarmRatio10;
-        prxData.alarms[3] = (prxData.darkResponse[3] * 10 / (prxData.lightResponse[3] + 1)) < prxData.alarmRatio10;
-        prxData.alarm = prxData.alarms[0] || prxData.alarms[1] || prxData.alarms[2] || prxData.alarms[3];
-    } else {
-        prxData.darkResponse[0] = getADCInjectedRank1Value();
-        prxData.darkResponse[1] = getADCInjectedRank2Value();
-        prxData.darkResponse[2] = getADCInjectedRank3Value();
-        prxData.darkResponse[3] = getADCInjectedRank4Value();
-    }
-    if prxData.alarm {
-        motorTimerStopChannel1();
-        motorTimerStopChannel2();
-    } else {
-        motorTimerStartChannel1();
-        motorTimerStartChannel2();
-    }
-}
