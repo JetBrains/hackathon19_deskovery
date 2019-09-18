@@ -206,9 +206,7 @@ int main(void)
     LCD5110_init();
 
     //todo remove
-    while(1==1) {
         rust_main();
-    }
   /* USER CODE END 2 */
 
   /* Infinite loop */
