@@ -37,18 +37,11 @@ extern "C" {
 #include <string.h>
 #include "vl53l1_api.h"
 #include "LCD.h"
+#include "rust_header.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef struct {
-    volatile int alarmRatio10 ;
-    volatile bool alarms[4];
-    volatile bool alarm;
-    volatile int darkResponse[4];
-    volatile int lightResponse[4];
-} PrxData;
-
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -69,7 +62,6 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void deskoveryInit(void);
 void deskoveryReadEncoders(void);
-bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -142,7 +134,6 @@ bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 
 extern volatile long left_ticks;
 extern volatile long right_ticks;
-extern volatile PrxData prxData;
 
 /* USER CODE END Private defines */
 
