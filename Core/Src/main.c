@@ -133,11 +133,11 @@ void measureAll() {
     LCD5110_set_XY(0,0);
     LCD5110_write_string(buf);
 
-    snprintf(buf, sizeof(buf),"L Enc: %07ld", left_ticks);
+    snprintf(buf, sizeof(buf),"L Enc: %07ld", left_ticks());
     LCD5110_set_XY(0,1);
     LCD5110_write_string(buf);
 
-    snprintf(buf, sizeof(buf),"R Enc: %07ld", right_ticks);
+    snprintf(buf, sizeof(buf),"R Enc: %07ld", right_ticks());
     LCD5110_set_XY(0,2);
     LCD5110_write_string(buf);
 
@@ -278,16 +278,16 @@ int main(void)
     HAL_Delay(200);
       HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
       __HAL_TIM_SET_COMPARE(&htim1,  TIM_CHANNEL_3, 99);
-      long l = left_ticks;
-      long r = right_ticks;
+      long l = left_ticks();
+      long r = right_ticks();
       deskoveryMotor(400, 400, false);
-      while ((left_ticks + right_ticks - l - r) < 2000) {
+      while ((left_ticks() + right_ticks() - l - r) < 2000) {
           measureAll();
       }
 
-      r = right_ticks;
+      r = right_ticks();
       deskoveryMotor(0, 300, false);
-      while ((right_ticks - r ) < 866) {
+      while ((right_ticks() - r ) < 866) {
           measureAll();
       }
 

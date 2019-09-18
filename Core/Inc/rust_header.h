@@ -15,9 +15,9 @@ typedef struct {
 
 extern volatile PrxData prxData;
 
-extern volatile long left_ticks;//todo fn
-extern volatile long right_ticks;//todo fn
-extern volatile int radar_range;//todo fn
+extern long left_ticks();
+extern long right_ticks();
+extern int radar_range();//todo implement
 
 unsigned long system_ticks();
 void led_control(bool on);
