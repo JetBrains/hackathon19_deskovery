@@ -12,3 +12,5 @@ void LCD5110_set_XY(unsigned char X,unsigned char Y);
 void LCD5110_write_string(const unsigned char *s);
 
 void LCD5110_write_Dec(unsigned int buffer);
+
+void LCD5110_write_pict(const unsigned char *p);

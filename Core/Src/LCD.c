@@ -62,6 +62,13 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 
 }
 
+void LCD5110_write_pict(const unsigned char *p) {
+    LCD5110_set_XY(0,0);
+    for(int i = 0; i< (84*48/8);i++) {
+        LCD5110_LCD_write_byte(p[i],1);
+    }
+}
+
 void LCD5110_write_char(unsigned char c)
 {
 	unsigned char line;
