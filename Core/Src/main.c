@@ -280,18 +280,18 @@ int main(void)
       __HAL_TIM_SET_COMPARE(&htim1,  TIM_CHANNEL_3, 99);
       long l = left_ticks();
       long r = right_ticks();
-      deskoveryMotor(400, 400, false);
+      deskovery_motor(400, 400, false);
       while ((left_ticks() + right_ticks() - l - r) < 2000) {
           measureAll();
       }
 
       r = right_ticks();
-      deskoveryMotor(0, 300, false);
+      deskovery_motor(0, 300, false);
       while ((right_ticks() - r ) < 866) {
           measureAll();
       }
 
-      deskoveryMotor(0, 0, false);
+      deskovery_motor(0, 0, false);
       HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 
       HAL_Delay(100);

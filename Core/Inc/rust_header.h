@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
+bool deskovery_motor(int pwrLeft,int pwrRight, bool recovery);
 
 typedef struct {
     volatile int alarmRatio10 ;
@@ -36,4 +36,10 @@ void LCD5110_write_pict(const unsigned char *p);
 
 void delay_ms(long ms);
 
+void debug_output(const unsigned char *p, unsigned int len); //todo implement
+
+void uart_output(const unsigned char *p, int len);  //todo implement
+int  uart_input(const unsigned char *p, int maxLen);  //todo implement
+
+void idle();  //todo implement
 #endif //HACKATHON19_DESKOVERY_RUST_HEADER_H
