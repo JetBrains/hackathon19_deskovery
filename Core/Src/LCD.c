@@ -91,7 +91,7 @@ void LCD5110_write_char_reg(unsigned char c)
 	}
 }
 
-void LCD5110_write_string(char *s)
+void LCD5110_write_string(unsigned const char *s)
 {
 	unsigned char ch;
   	while(*s!='\0')
