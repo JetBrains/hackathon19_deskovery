@@ -4,13 +4,13 @@ version = "0.1.0"
 authors = ["Kirill Bulatov <mail4score@gmail.com>"]
 edition = "2018"
 
-build = "build.rs"
+#build = "build.rs"
 
 [lib]
 name = "rust_deskovery"
 crate-type = ["staticlib"]
 
-[build-dependencies]
-bindgen = "0.51.0"
+#[build-dependencies]
+#bindgen = "0.51.0"
 
 [dependencies]

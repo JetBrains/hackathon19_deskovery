@@ -10,7 +10,8 @@ pub mod libc {
     pub type c_char = i8;
 }
 
-include!(concat!(env!("OUT_DIR"), "/descovery_bindings.rs"));
+//include!(concat!(env!("OUT_DIR"), "/descovery_bindings.rs"));
+include!("descovery_bindings.rs");
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
