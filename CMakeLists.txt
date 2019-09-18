@@ -14,7 +14,7 @@ set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
 set(CMAKE_OBJDUMP arm-none-eabi-objdump)
 set(SIZE arm-none-eabi-size)
 
-SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L476RGTx_FLASH.ld)
+SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L476RGTx_FLASH.ld Core/rust_header.h)
 
 #Uncomment for hardware floating point
 SET(FPU_FLAGS "-mfloat-abi=hard -mfpu=fpv4-sp-d16")
@@ -51,3 +51,27 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
         COMMENT "Building ${HEX_FILE}
 Building ${BIN_FILE}")
+
+#Rust part start
+set(RUST_MODULE_NAME f3blink)
+set(RUST_MODULE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/rust/${RUST_MODULE_NAME})
+set(RUST_LIB ${RUST_MODULE_ROOT}/target/${RUST_TARGET_ARCH}/debug/lib${RUST_MODULE_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
+set_source_files_properties(
+        ${RUST_LIB}
+        PROPERTIES
+        EXTERNAL_OBJECT true
+        GENERATED true
+)
+
+set_property(DIRECTORY APPEND
+        PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${RUST_MODULE_ROOT}/target
+        )
+
+add_custom_command(OUTPUT ${RUST_LIB}
+        COMMAND cargo build --target=${RUST_TARGET_ARCH}
+        DEPENDS ${RUST_MODULE_ROOT}/src/*.* ${RUST_MODULE_ROOT}/Cargo.*
+        COMMENT "Compiling rust"
+        WORKING_DIRECTORY ${RUST_MODULE_ROOT}
+        USES_TERMINAL
+        )
+#Rust part end
