@@ -113,7 +113,7 @@ extern "C" {
     pub fn LCD5110_set_XY(X: crate::libc::c_uchar, Y: crate::libc::c_uchar);
 }
 extern "C" {
-    pub fn LCD5110_write_string(s: *const crate::libc::c_uchar);
+    pub fn LCD5110_write_bytes(s: *const crate::libc::c_uchar, len:crate::libc::c_uint);
 }
 extern "C" {
     pub fn LCD5110_write_pict(p: *const crate::libc::c_uchar);

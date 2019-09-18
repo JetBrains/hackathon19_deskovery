@@ -15,9 +15,9 @@ typedef struct {
 
 extern volatile PrxData prxData;
 
-extern long left_ticks();
-extern long right_ticks();
-extern int radar_range();//todo implement
+long left_ticks();
+long right_ticks();
+int radar_range();//todo implement
 
 unsigned long system_ticks();
 void led_control(bool on);
@@ -30,7 +30,7 @@ void LCD5110_clear(void);
 
 void LCD5110_set_XY(unsigned char X,unsigned char Y);
 
-void LCD5110_write_string(const unsigned char *s);
+void LCD5110_write_bytes(unsigned const char *s, int len);
 
 void LCD5110_write_pict(const unsigned char *p);
 
