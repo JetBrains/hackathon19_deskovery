@@ -8,13 +8,22 @@ use std::time::Duration;
 use serial::prelude::*;
 use serial::SystemPort;
 
-use wifi::{connect_to_wifi, Port, PortResult};
+use wifi::{connect_to_wifi, Port, PortResult, ip_status, establish_connection, close_connection, send_data};
 
 fn main() {
     let mut res = serial::open("/dev/cu.usbserial-14200");
     let mut port = res.unwrap();
     let mut std_port = interact(port).unwrap();
-    connect_to_wifi(&mut std_port);
+    do_example(&mut std_port)
+}
+
+fn do_example<T: SerialPort>(std_port: &mut StdPort<T>) {
+    connect_to_wifi(std_port);
+    let result = ip_status(std_port);
+//    close_connection(std_port);
+    establish_connection(std_port);
+    send_data(std_port, "GET /poll HTTP/1.1\n\n");
+    close_connection(std_port);
 }
 
 fn interact<T: SerialPort>(mut port: T) -> io::Result<StdPort<T>> {
@@ -27,7 +36,7 @@ fn interact<T: SerialPort>(mut port: T) -> io::Result<StdPort<T>> {
         Ok(())
     })?;
 
-    port.set_timeout(Duration::from_millis(100000))?;
+    port.set_timeout(Duration::from_millis(5000))?;
     Ok(StdPort { serial_port: port })
 }
 
