@@ -1,6 +1,8 @@
 #ifndef HACKATHON19_DESKOVERY_RUST_HEADER_H
 #define HACKATHON19_DESKOVERY_RUST_HEADER_H
 
+#include <stdbool.h>
+
 bool deskoveryMotor(int pwrLeft,int pwrRight, bool recovery);
 
 typedef struct {
