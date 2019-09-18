@@ -8,8 +8,8 @@ extern TIM_HandleTypeDef HMOTOR_TIM;
 extern TIM_HandleTypeDef EL_TIM;
 extern TIM_HandleTypeDef ER_TIM;
 extern ADC_HandleTypeDef hadc1;
-volatile long left_ticks = 0;
-volatile long right_ticks = 0;
+static volatile long left_ticks_var = 0;
+static volatile long right_ticks_var = 0;
 
 extern UART_HandleTypeDef huart2;
 
@@ -42,11 +42,11 @@ void deskoveryInit(void) {
 }
 
 void deskoveryReadEncoders() {
-    left_ticks += (int16_t) __HAL_TIM_GET_COUNTER(&EL_TIM);
+    left_ticks_var += (int16_t) __HAL_TIM_GET_COUNTER(&EL_TIM);
     __HAL_TIM_SET_COUNTER(&EL_TIM, 0);
     __HAL_TIM_SET_COMPARE(&EL_TIM, TIM_CHANNEL_1, 0);
     __HAL_TIM_SET_COMPARE(&EL_TIM, TIM_CHANNEL_2, 0);
-    right_ticks += (int16_t) __HAL_TIM_GET_COUNTER(&ER_TIM);
+    right_ticks_var += (int16_t) __HAL_TIM_GET_COUNTER(&ER_TIM);
     __HAL_TIM_SET_COUNTER(&ER_TIM, 0);
     __HAL_TIM_SET_COMPARE(&ER_TIM, TIM_CHANNEL_1, 0);
     __HAL_TIM_SET_COMPARE(&ER_TIM, TIM_CHANNEL_2, 0);
@@ -77,12 +77,12 @@ void HAL_ADCEx_InjectedConvCpltCallback(__unused ADC_HandleTypeDef *hadc) {
         prxData.darkResponse[2] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
         prxData.darkResponse[3] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_4);
     }
-    if(prxData.alarm) {
-        HAL_TIM_PWM_Stop(&HMOTOR_TIM,TIM_CHANNEL_1);
-        HAL_TIM_PWM_Stop(&HMOTOR_TIM,TIM_CHANNEL_2);
+    if (prxData.alarm) {
+        HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_1);
+        HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_2);
     } else {
-        HAL_TIM_PWM_Start(&HMOTOR_TIM,TIM_CHANNEL_1);
-        HAL_TIM_PWM_Start(&HMOTOR_TIM,TIM_CHANNEL_2);
+        HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_1);
+        HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_2);
 
     }
 
@@ -106,9 +106,26 @@ __unused void display_bg_control(int brightness) {
         brightness = 99;
     }
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 99 - brightness);
-    HAL_TIM_PWM_Start(&htim1,  TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
 }
 
 __unused unsigned long system_ticks() {
     return HAL_GetTick();
+}
+
+long left_ticks() {
+    long l;
+    __disable_irq();
+    l = left_ticks_var;
+    __enable_irq();
+    return l;
+}
+
+long right_ticks() {
+    long r;
+    __disable_irq();
+    r = right_ticks_var;
+    __enable_irq();
+    return r;
+
 }
