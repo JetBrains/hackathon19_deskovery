@@ -95,6 +95,30 @@ extern "C" {
     pub fn ledControl(on: bool);
 }
 extern "C" {
+    pub fn getADCInjectedRank1Value() -> crate::libc::c_int;
+}
+extern "C" {
+    pub fn getADCInjectedRank2Value() -> crate::libc::c_int;
+}
+extern "C" {
+    pub fn getADCInjectedRank3Value() -> crate::libc::c_int;
+}
+extern "C" {
+    pub fn getADCInjectedRank4Value() -> crate::libc::c_int;
+}
+extern "C" {
+    pub fn motorTimerStopChannel1();
+}
+extern "C" {
+    pub fn motorTimerStopChannel2();
+}
+extern "C" {
+    pub fn motorTimerStartChannel1();
+}
+extern "C" {
+    pub fn motorTimerStartChannel2();
+}
+extern "C" {
     pub fn displayBgControl(brightness: crate::libc::c_int);
 }
 extern "C" {

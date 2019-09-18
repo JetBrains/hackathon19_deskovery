@@ -136,6 +136,7 @@ extern volatile long left_ticks;
 extern volatile long right_ticks;
 
 extern void rust_main();
+extern void update_prx_data(bool);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
