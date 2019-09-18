@@ -21,3 +21,15 @@ fn panic(_info: &PanicInfo) -> ! {
     //    writeln!(host_stderr, "{}", info).ok();
     loop {}
 }
+
+#[no_mangle]
+pub extern "C" fn rust_main() {
+//    let s = "Hello, Embedded World";
+
+    unsafe {
+//        outputStr(s.as_ptr(), s.len());
+        ledControl(true);
+        ledControl(false);
+
+    }
+}
