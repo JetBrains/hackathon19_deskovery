@@ -14,7 +14,7 @@ set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
 set(CMAKE_OBJDUMP arm-none-eabi-objdump)
 set(SIZE arm-none-eabi-size)
 
-SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L476RGTx_FLASH.ld Core/Inc/rust_header.h)
+SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32L476RGTx_FLASH.ld)
 
 #Uncomment for hardware floating point
 SET(FPU_FLAGS "-mfloat-abi=hard -mfpu=fpv4-sp-d16")
@@ -38,23 +38,10 @@ file(GLOB_RECURSE VL53L1_SOURCES "vl53l1x/*.*")
 
 include_directories(Core/Inc Drivers/STM32L4xx_HAL_Driver/Inc Drivers/STM32L4xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32L4xx/Include Drivers/CMSIS/Include vl53l1x)
 
-add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT} ${VL53L1_SOURCES})
-
-set(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map")
-
-set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
-set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
-
-add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
-        COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
-        COMMENT "Building ${HEX_FILE}
-Building ${BIN_FILE}")
-
 #Rust part start
-set(RUST_MODULE_NAME f3blink)
-set(RUST_MODULE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/rust/${RUST_MODULE_NAME})
+SET(RUST_TARGET_ARCH thumbv7em-none-eabihf)
+set(RUST_MODULE_NAME rust_deskovery)
+set(RUST_MODULE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/${RUST_MODULE_NAME})
 set(RUST_LIB ${RUST_MODULE_ROOT}/target/${RUST_TARGET_ARCH}/debug/lib${RUST_MODULE_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
 set_source_files_properties(
         ${RUST_LIB}
@@ -75,3 +62,17 @@ add_custom_command(OUTPUT ${RUST_LIB}
         USES_TERMINAL
         )
 #Rust part end
+
+add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT} ${VL53L1_SOURCES} ${RUST_LIB})
+
+set(CMAKE_EXE_LINKER_FLAGS
+    "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map")
+
+set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
+set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
+
+add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
+        COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
+        COMMENT "Building ${HEX_FILE}
+Building ${BIN_FILE}")

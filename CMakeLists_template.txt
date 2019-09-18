@@ -38,7 +38,32 @@ file(GLOB_RECURSE VL53L1_SOURCES "vl53l1x/*.*")
 
 include_directories(${includes} vl53l1x)
 
-add_executable($${PROJECT_NAME}.elf $${SOURCES} $${LINKER_SCRIPT} $${VL53L1_SOURCES})
+#Rust part start
+SET(RUST_TARGET_ARCH thumbv7em-none-eabihf)
+set(RUST_MODULE_NAME rust_deskovery)
+set(RUST_MODULE_ROOT $${CMAKE_CURRENT_SOURCE_DIR}/$${RUST_MODULE_NAME})
+set(RUST_LIB $${RUST_MODULE_ROOT}/target/${RUST_TARGET_ARCH}/debug/lib$${RUST_MODULE_NAME}$${CMAKE_STATIC_LIBRARY_SUFFIX})
+set_source_files_properties(
+        $${RUST_LIB}
+        PROPERTIES
+        EXTERNAL_OBJECT true
+        GENERATED true
+)
+
+set_property(DIRECTORY APPEND
+        PROPERTY ADDITIONAL_MAKE_CLEAN_FILES $${RUST_MODULE_ROOT}/target
+        )
+
+add_custom_command(OUTPUT $${RUST_LIB}
+        COMMAND cargo build --target=$${RUST_TARGET_ARCH}
+        DEPENDS ${RUST_MODULE_ROOT}/src/*.* $${RUST_MODULE_ROOT}/Cargo.*
+        COMMENT "Compiling rust"
+        WORKING_DIRECTORY $${RUST_MODULE_ROOT}
+        USES_TERMINAL
+        )
+#Rust part end
+
+add_executable($${PROJECT_NAME}.elf $${SOURCES} $${LINKER_SCRIPT} $${VL53L1_SOURCES} $${RUST_LIB})
 
 set(CMAKE_EXE_LINKER_FLAGS
     "$${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=$${PROJECT_BINARY_DIR}/$${PROJECT_NAME}.map")
