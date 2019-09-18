@@ -25,7 +25,7 @@ static inline void runMotorChannel(int pwr, GPIO_TypeDef *dirPort, uint16_t dirP
     HAL_TIM_PWM_Start(&HMOTOR_TIM, motorChannel);
 }
 
-bool deskoveryMotor(int pwrLeft, int pwrRight, bool recovery) {
+bool deskovery_motor(int pwrLeft, int pwrRight, bool recovery) {
 //    if(! recovery && prxData.alarm) {//todo recovery
 //        pwrLeft = 0;
 //        pwrRight = 0;
