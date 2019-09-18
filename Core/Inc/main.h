@@ -135,6 +135,7 @@ void deskoveryReadEncoders(void);
 extern volatile long left_ticks;
 extern volatile long right_ticks;
 
+extern void rust_main();
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

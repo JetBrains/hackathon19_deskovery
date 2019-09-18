@@ -90,3 +90,6 @@ void HAL_ADCEx_InjectedConvCpltCallback(__unused ADC_HandleTypeDef *hadc) {
     HAL_ADCEx_InjectedStart_IT(&hadc1);
 }
 
+void ledControl(bool on) {
+    HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin, on ? GPIO_PIN_SET: GPIO_PIN_RESET);
+}
