@@ -26,14 +26,7 @@ pub trait Port {
 
 // TODO: make it smarter
 fn contains(src: &[u8], pattern: &[u8]) -> bool {
-    for (i, x) in src.iter().enumerate() {
-        if *x == pattern[0] {
-            if &src[i..i+pattern.len()] == pattern {
-                return true;
-            }
-        }
-    }
-    return false
+    src.windows(pattern.len()).any(|s| s == pattern)
 }
 
 pub fn connect_to_wifi<T : Port>(port: &mut T) -> PortResult<()> {
