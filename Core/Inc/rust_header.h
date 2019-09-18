@@ -20,6 +20,16 @@ extern volatile long right_ticks;
 
 void ledControl(bool on);
 
+int getADCInjectedRank1Value();
+int getADCInjectedRank2Value();
+int getADCInjectedRank3Value();
+int getADCInjectedRank4Value();
+
+void motorTimerStopChannel1();
+void motorTimerStopChannel2();
+void motorTimerStartChannel1();
+void motorTimerStartChannel2();
+
 void displayBgControl(int brightness);
 
 void LCD5110_write_char(unsigned char c);
