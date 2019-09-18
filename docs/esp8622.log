@@ -1,0 +1,42 @@
+
+AT
+
+OK
+AT+CWMODE=1
+
+OK
+AT+CWJAP="ELM NET","deskoverynet"
+WIFI CONNECTED
+WIFI GOT IP
+
+OK
+
+AT+CIPSTATUS
+STATUS:2
+
+OK
+
+AT+CIPDOMAIN="ya.ru"
++CIPDOMAIN:87.250.250.242
+
+OK
+
+AT+CIPSTART="TCP","192.168.0.12",1180
+CONNECT
+
+OK
+
+AT+CIPSEND=22
+
+
+
+
+OK
+> 
+asdasdasdasdasdasdasd
+Recv 22 bytes
+
+SEND OK
+
+AT+CIPCLOSE
+CLOSED
