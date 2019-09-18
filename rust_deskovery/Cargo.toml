@@ -12,3 +12,5 @@ crate-type = ["staticlib"]
 
 [build-dependencies]
 bindgen = "0.51.0"
+
+[dependencies]
