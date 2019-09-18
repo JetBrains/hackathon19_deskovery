@@ -11,6 +11,7 @@ name = "rust_deskovery"
 crate-type = ["staticlib"]
 
 [build-dependencies]
-bindgen = "0.51.0"
+bindgen = "0.51"
+image = "0.22"
 
 [dependencies]

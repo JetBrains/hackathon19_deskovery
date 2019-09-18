@@ -4,12 +4,13 @@
 
 mod compat;
 mod odometry;
+mod generated_images;
 
 use crate::odometry::{OdometryComputer, Position};
 use compat::display_text;
 use compat::{
     delay_ms, display_bg_control, idle, led_control, left_ticks, prxData, radar_range, right_ticks,
-    LCD5110_clear, LCD5110_set_XY, LCD5110_write_bytes, LCD5110_write_char,
+    LCD5110_clear, LCD5110_set_XY, LCD5110_write_bytes, LCD5110_write_char, LCD5110_write_pict,
 }; //todo make safe
 
 fn output_data_line<F>(y: u8, label: &str, dataGetter: F)
@@ -80,20 +81,23 @@ pub extern "C" fn rust_main() {
             led_control(false);
             brightness = (brightness + 10) % 100;
             display_bg_control(brightness);
-            LCD5110_clear();
-            display_text(0, 0, "This is RUST!");
 
-            output_data_line(1, "B: ", || brightness);
-            output_data_line(2, "Rng: ", || radar_range());
-            output_data_line(3, "Left : ", || left_ticks());
-            output_data_line(4, "Right: ", || right_ticks());
 
-            LCD5110_set_XY(3, 5);
-            LCD5110_write_char(alarm_char(0));
-            LCD5110_write_char(alarm_char(1));
-            LCD5110_write_char(alarm_char(2));
-            LCD5110_write_char(alarm_char(3));
-            odo_computer.update(left_ticks(), right_ticks());
+            LCD5110_write_pict( &generated_images::CLION_LOGO_BYTES as *const u8);
+//            LCD5110_clear();
+//            display_text(0, 0, "This is RUST!");
+//
+//            output_data_line(1, "B: ", || brightness);
+//            output_data_line(2, "Rng: ", || radar_range());
+//            output_data_line(3, "Left : ", || left_ticks());
+//            output_data_line(4, "Right: ", || right_ticks());
+//
+//            LCD5110_set_XY(3, 5);
+//            LCD5110_write_char(alarm_char(0));
+//            LCD5110_write_char(alarm_char(1));
+//            LCD5110_write_char(alarm_char(2));
+//            LCD5110_write_char(alarm_char(3));
+//            odo_computer.update(left_ticks(), right_ticks());
 
             // TODO: f64 printing
             // output_data_line(4, "x:     ", || position.x);
