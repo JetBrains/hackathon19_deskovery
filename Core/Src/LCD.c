@@ -97,16 +97,22 @@ void LCD5110_write_char_reg(unsigned char c)
 		
 	}
 }
-
 void LCD5110_write_string(unsigned const char *s)
 {
-	unsigned char ch;
-  	while(*s!='\0')
-	{
-		ch = *s;
-		LCD5110_write_char(ch);
-		s++;
-	}
+    unsigned char ch;
+    while(*s!='\0')
+    {
+        ch = *s;
+        LCD5110_write_char(ch);
+        s++;
+    }
+}
+
+__unused void LCD5110_write_bytes(unsigned const char *s, int len)
+{
+    for(int i =0; i < len; i++) {
+        LCD5110_write_char(s[i]);
+    }
 }
 
 

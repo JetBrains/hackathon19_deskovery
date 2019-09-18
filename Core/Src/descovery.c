@@ -8,10 +8,11 @@ extern TIM_HandleTypeDef HMOTOR_TIM;
 extern TIM_HandleTypeDef EL_TIM;
 extern TIM_HandleTypeDef ER_TIM;
 extern ADC_HandleTypeDef hadc1;
-static volatile long left_ticks_var = 0;
-static volatile long right_ticks_var = 0;
+static volatile int64_t left_ticks_var = 0;
+static volatile int64_t right_ticks_var = 0;
 
 extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
 
 
 static inline void runMotorChannel(int pwr, GPIO_TypeDef *dirPort, uint16_t dirPin, uint16_t motorChannel) {
@@ -35,10 +36,59 @@ bool deskovery_motor(int pwrLeft, int pwrRight, bool recovery) {
     return true;
 }
 
+VL53L1_Dev_t centerSensor = {
+        .I2cDevAddr = 0x52,
+        .new_data_ready_poll_duration_ms = 1000,
+};
+
+void VLO53L1A1_ResetPin(int state) {
+    HAL_GPIO_WritePin(VL53_RST_GPIO_Port, VL53_RST_Pin, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+void setupSensor(VL53L1_DEV dev) {
+    uint16_t wordData;
+    uint8_t byteData;
+    __unused int status = 0;
+    VLO53L1A1_ResetPin(0); // Shutdown center sensor
+    HAL_Delay(2);
+    VLO53L1A1_ResetPin(1); // run center sensor
+    HAL_Delay(2);
+    HAL_ADCEx_InjectedStart_IT(&hadc1);
+
+/* Those basic I2C read functions can be used to check your own I2C functions */
+    status += VL53L1_RdByte(dev, 0x010F, &byteData);
+    printf("VL53L1X Model_ID: %X\n", byteData);
+    status += VL53L1_RdByte(dev, 0x0110, &byteData);
+    printf("VL53L1X Module_Type: %X\n", byteData);
+    status += VL53L1_RdWord(dev, 0x010F, &wordData);
+    printf("VL53L1X: %X\n", wordData);
+    status += VL53L1_WaitDeviceBooted(dev);
+    printf("Chip booted\n");
+
+    /* This function must to be called to initialize the sensor with the default setting  */
+    status += VL53L1_DataInit(dev);
+    status += VL53L1_StaticInit(dev);
+    /* Optional functions to be used to change the main ranging parameters according the application requirements to get the best ranging performances */
+    status += VL53L1_SetPresetMode(dev, VL53L1_PRESETMODE_LITE_RANGING);
+    status += VL53L1_SetDistanceMode(dev, VL53L1_DISTANCEMODE_SHORT);
+    status += VL53L1_SetMeasurementTimingBudgetMicroSeconds(dev, 10000);
+    status += VL53L1_SetInterMeasurementPeriodMilliSeconds(dev, 0);
+
+
+//  status = VL53L1X_SetOffset(dev,20); /* offset compensation in mm */
+//  status = VL53L1X_SetROI(dev, 16, 16); /* minimum ROI 4,4 */
+//	status = VL53L1X_CalibrateOffset(dev, 140, &offset); /* may take few second to perform the offset cal*/
+//	status = VL53L1X_CalibrateXtalk(dev, 1000, &xtalk); /* may take few second to perform the xtalk cal */
+    status += VL53L1_StartMeasurement(dev);   /* This function has to be called to enable the ranging */
+
+    if (status) Error_Handler();
+}
+
 
 void deskoveryInit(void) {
     HAL_TIM_Encoder_Start(&EL_TIM, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&ER_TIM, TIM_CHANNEL_ALL);
+    setupSensor(&centerSensor);
 }
 
 void deskoveryReadEncoders() {
@@ -96,6 +146,7 @@ __unused void led_control(bool on) {
 }
 
 __unused void delay_ms(long ms) {
+    //todo idle call in the cycle
     HAL_Delay(ms);
 }
 
@@ -128,4 +179,36 @@ long right_ticks() {
     __enable_irq();
     return r;
 
+}
+
+static VL53L1_RangingMeasurementData_t rangeData;
+
+static void runRadar() {
+    __unused int status = 0;
+
+    status += VL53L1_WaitMeasurementDataReady(&centerSensor);
+    status += VL53L1_GetRangingMeasurementData(&centerSensor, &rangeData);
+    VL53L1_ClearInterruptAndStartMeasurement(&centerSensor);
+    if (status) {
+        rangeData.RangeStatus = -101;
+    }
+}
+
+
+__unused void debug_output(const unsigned char *p, unsigned int len) {
+    HAL_UART_Transmit(&huart2, (uint8_t *) p, len, 1000);
+}
+
+__unused void uart_output(const unsigned char *p, int len) {
+    HAL_UART_Transmit(&huart3, (uint8_t *) p, len, 1000);
+}
+
+__unused int uart_input(const unsigned char *p, int maxLen);  //todo implement
+
+void idle() {
+    runRadar();
+}
+
+__unused int radar_range() {
+    return rangeData.RangeStatus == 0 ? rangeData.RangeMilliMeter : -1;
 }

@@ -10,8 +10,8 @@ const WHEEL_BASE_CM: f64 = 14.0;
 pub mod libc {
     pub type c_int = i32;
     pub type c_uint = u32;
-    pub type c_long = i64;
-    pub type c_ulong = u64;
+    pub type c_long = i32;
+    pub type c_ulong = u32;
     pub type c_uchar = u8;
     pub type c_char = i8;
     pub type c_double = f64;
@@ -26,6 +26,47 @@ fn panic(_info: &PanicInfo) -> ! {
     //    writeln!(host_stderr, "{}", info).ok();
     loop {}
 }
+
+fn display_text(x: u8, y: u8, s: &str) {
+    unsafe {
+        LCD5110_set_XY(x, y);
+        let bytes = s.as_bytes();
+        LCD5110_write_bytes(bytes.as_ptr() as *const u8, bytes.len() as u32);
+    }
+}
+
+fn output_data_line<F>(y: u8, label: &str, dataGetter: F) where F: FnOnce() -> i32 {
+    display_text(0, y, label);
+    let mut buf: [u8; 10] = [0; 10];
+    let mut index = buf.len() - 1;
+    let mut val = dataGetter();
+    let sign = val < 0;
+    if sign {
+        val = -val;
+    }
+    loop {
+        buf[index] = (val % 10 + 48) as u8;
+        index -= 1;
+        val = val / 10;
+        if val == 0 {
+            break;
+        }
+    }
+    if sign {
+        buf[index] = '-' as u8;
+        index -= 1;
+    }
+    unsafe {
+        LCD5110_write_bytes(buf[index + 1..].as_ptr() as *const u8, (buf.len() - index - 1) as u32);
+    }
+}
+
+fn alarm_char(alarm_idx: usize) -> u8 {
+    unsafe {
+        if prxData.alarms[alarm_idx] { 'A' as u8 } else { '.' as u8 }
+    }
+}
+
 
 #[no_mangle]
 pub extern "C" fn rust_main() {
@@ -45,14 +86,32 @@ pub extern "C" fn rust_main() {
         };
 
         loop {
+            idle();
             led_control(true);
             delay_ms(300);
             led_control(false);
-            brightness = (brightness + 10) % 102;
+            brightness = (brightness + 10) % 100;
             display_bg_control(brightness);
-            LCD5110_set_XY(0, 0);
-            LCD5110_write_string(b"This is RUST!" as *const u8);
-            odo_computer.compute_odometry(left_ticks(), right_ticks(), system_ticks() as f64);
+            LCD5110_clear();
+            display_text(0, 0, "This is RUST!");
+
+            output_data_line(1, "B: ", || brightness);
+            output_data_line(2, "Rng: ", || radar_range());
+            output_data_line(3, "Left : ", || left_ticks() as i32);
+            output_data_line(4, "Right: ", || right_ticks() as i32);
+
+            LCD5110_set_XY(3, 5);
+            LCD5110_write_char(alarm_char(0));
+            LCD5110_write_char(alarm_char(1));
+            LCD5110_write_char(alarm_char(2));
+            LCD5110_write_char(alarm_char(3));
+            let lt = left_ticks();//todo fix types
+            let rt = right_ticks();//todo fix types
+            odo_computer.compute_odometry(lt as i64, rt as i64, system_ticks() as f64);
+
+            /*
+                        void debug_output(const unsigned char *p, unsigned int len); //todo implement
+            */
         }
     }
 }
