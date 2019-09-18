@@ -92,10 +92,10 @@ extern "C" {
     pub static mut right_ticks: crate::libc::c_long;
 }
 extern "C" {
-    pub fn ledControl(on: bool);
+    pub fn led_control(on: bool);
 }
 extern "C" {
-    pub fn displayBgControl(brightness: crate::libc::c_int);
+    pub fn display_bg_control(brightness: crate::libc::c_int);
 }
 extern "C" {
     pub fn LCD5110_write_char(c: crate::libc::c_uchar);
@@ -113,5 +113,5 @@ extern "C" {
     pub fn LCD5110_write_pict(p: *const crate::libc::c_uchar);
 }
 extern "C" {
-    pub fn delayMs(ms: crate::libc::c_long);
+    pub fn delay_ms(ms: crate::libc::c_long);
 }

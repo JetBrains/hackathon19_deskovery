@@ -28,11 +28,11 @@ pub extern "C" fn rust_main() {
         //        outputStr(s.as_ptr(), s.len());
         let mut brightness: i32 = 0;
         loop {
-            ledControl(true);
-            delayMs(300);
-            ledControl(false);
+            led_control(true);
+            delay_ms(300);
+            led_control(false);
             brightness = (brightness + 10) % 102;
-            displayBgControl(brightness);
+            display_bg_control(brightness);
             LCD5110_set_XY(0, 0);
             LCD5110_write_string(b"This is RUST!" as *const u8);
         }

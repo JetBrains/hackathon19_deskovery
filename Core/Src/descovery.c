@@ -61,53 +61,45 @@ volatile PrxData prxData = {.alarmRatio10 = 30, .alarms = {false, false, false, 
         .darkResponse = {0, 0, 0, 0}, .lightResponse ={0, 0, 0, 0}};
 
 void HAL_ADCEx_InjectedConvCpltCallback(__unused ADC_HandleTypeDef *hadc) {
-    update_prx_data(prxLedOn);
+    if (prxLedOn) {
+        prxData.lightResponse[0] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+        prxData.lightResponse[1] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+        prxData.lightResponse[2] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
+        prxData.lightResponse[3] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_4);
+        prxData.alarms[0] = (prxData.darkResponse[0] * 10 / (prxData.lightResponse[0] + 1)) < prxData.alarmRatio10;
+        prxData.alarms[1] = (prxData.darkResponse[1] * 10 / (prxData.lightResponse[1] + 1)) < prxData.alarmRatio10;
+        prxData.alarms[2] = (prxData.darkResponse[2] * 10 / (prxData.lightResponse[2] + 1)) < prxData.alarmRatio10;
+        prxData.alarms[3] = (prxData.darkResponse[3] * 10 / (prxData.lightResponse[3] + 1)) < prxData.alarmRatio10;
+        prxData.alarm = prxData.alarms[0] || prxData.alarms[1] || prxData.alarms[2] || prxData.alarms[3];
+    } else {
+        prxData.darkResponse[0] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+        prxData.darkResponse[1] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+        prxData.darkResponse[2] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
+        prxData.darkResponse[3] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_4);
+    }
+    if(prxData.alarm) {
+        HAL_TIM_PWM_Stop(&HMOTOR_TIM,TIM_CHANNEL_1);
+        HAL_TIM_PWM_Stop(&HMOTOR_TIM,TIM_CHANNEL_2);
+    } else {
+        HAL_TIM_PWM_Start(&HMOTOR_TIM,TIM_CHANNEL_1);
+        HAL_TIM_PWM_Start(&HMOTOR_TIM,TIM_CHANNEL_2);
+
+    }
+
     prxLedOn = !prxLedOn;
     HAL_GPIO_WritePin(PRX_EN_GPIO_Port, PRX_EN_Pin, prxLedOn ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_ADCEx_InjectedStart_IT(&hadc1);
 }
 
-__unused int getADCInjectedRank1Value() {
-    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
-}
-
-__unused int getADCInjectedRank2Value() {
-    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
-}
-
-__unused int getADCInjectedRank3Value() {
-    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
-}
-
-__unused int getADCInjectedRank4Value() {
-    return HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_4);
-}
-
-__unused void motorTimerStopChannel1() {
-    HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_1);
-}
-
-__unused void motorTimerStopChannel2() {
-    HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_2);
-}
-
-__unused void motorTimerStartChannel1() {
-    HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_1);
-}
-
-__unused void motorTimerStartChannel2() {
-    HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_2);;
-}
-
-__unused void ledControl(bool on) {
+__unused void led_control(bool on) {
     HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-__unused void delayMs(long ms) {
+__unused void delay_ms(long ms) {
     HAL_Delay(ms);
 }
 
-__unused void displayBgControl(int brightness) {
+__unused void display_bg_control(int brightness) {
     if (brightness < 0) {
         brightness = 0;
     } else if (brightness > 99) {
@@ -115,6 +107,8 @@ __unused void displayBgControl(int brightness) {
     }
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 99 - brightness);
     HAL_TIM_PWM_Start(&htim1,  TIM_CHANNEL_3);
-
 }
 
+__unused unsigned long system_ticks() {
+    return HAL_GetTick();
+}

@@ -15,12 +15,14 @@ typedef struct {
 
 extern volatile PrxData prxData;
 
-extern volatile long left_ticks;
-extern volatile long right_ticks;
+extern volatile long left_ticks;//todo fn
+extern volatile long right_ticks;//todo fn
+extern volatile int radar_range;//todo fn
 
-void ledControl(bool on);
+unsigned long system_ticks();
+void led_control(bool on);
 
-void displayBgControl(int brightness);
+void display_bg_control(int brightness);
 
 void LCD5110_write_char(unsigned char c);
 
@@ -32,6 +34,6 @@ void LCD5110_write_string(const unsigned char *s);
 
 void LCD5110_write_pict(const unsigned char *p);
 
-void delayMs(long ms);
+void delay_ms(long ms);
 
 #endif //HACKATHON19_DESKOVERY_RUST_HEADER_H
