@@ -18,9 +18,9 @@ extern volatile PrxData prxData;
 extern volatile long left_ticks;
 extern volatile long right_ticks;
 
-__unused void ledControl(bool on);
+void ledControl(bool on);
 
-__unused void displayBgControl(int brightness);
+void displayBgControl(int brightness);
 
 void LCD5110_write_char(unsigned char c);
 
@@ -32,6 +32,6 @@ void LCD5110_write_string(const unsigned char *s);
 
 void LCD5110_write_pict(const unsigned char *p);
 
-__unused void delayMs(long ms);
+void delayMs(long ms);
 
 #endif //HACKATHON19_DESKOVERY_RUST_HEADER_H

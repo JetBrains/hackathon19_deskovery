@@ -2,7 +2,8 @@ use std::env;
 use std::path::PathBuf;
 
 fn generate_rust_bindings(out_path: PathBuf) {
-    let result_path = out_path.join("descovery_bindings.rs");
+    //let result_path = out_path.join("descovery_bindings.rs");
+    let result_path = PathBuf::from("src").join("descovery_bindings.rs");
 
     if result_path.is_file() {
         // TODO uncomment
