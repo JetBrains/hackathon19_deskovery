@@ -22,11 +22,19 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn rust_main() {
-    //    let s = "Hello, Embedded World";
+//    let s = "Hello, Embedded World";
 
     unsafe {
-        //        outputStr(s.as_ptr(), s.len());
-        ledControl(true);
-        ledControl(false);
+//        outputStr(s.as_ptr(), s.len());
+        let mut brightness: i32 = 0;
+        loop {
+            ledControl(true);
+            delayMs(300);
+            ledControl(false);
+            brightness = (brightness + 10) % 102;
+            displayBgControl(brightness);
+            LCD5110_set_XY(0,0);
+            LCD5110_write_string(b"This is RUST!" as *mut i8)
+        }
     }
 }
