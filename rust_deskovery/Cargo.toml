@@ -1,0 +1,12 @@
+[package]
+name = "rust_deskovery"
+version = "0.1.0"
+authors = ["Kirill Bulatov <mail4score@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "rust_deskovery"
+crate-type = ["staticlib"]
+
+
+[dependencies]
