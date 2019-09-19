@@ -7,7 +7,13 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serial = "0.4.0"
 data = { path = "../data" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde-json-core = "0.0.1"
+
+[dev-dependencies]
+serial = "0.4.0"
+
+[features]
+default = ["std"]
+std = []

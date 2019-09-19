@@ -1,6 +1,9 @@
-use std::fmt::{Write, Error};
-use std::cmp::min;
+#![cfg_attr(not(feature = "std"), no_std)]
+
 use data::ServerData;
+use core::cmp::min;
+use core::fmt::{Write, Error};
+use core::str::from_utf8;
 
 // TODO: add some errors
 pub enum PortError {
@@ -24,6 +27,7 @@ pub trait Port {
         // TODO: handle `ERROR`s
         while index_result.is_none() {
             let size = self.read(&mut out[total_size..])?;
+            #[cfg(feature = "std")]
             println!("< {}", std::str::from_utf8(&out[total_size..total_size + size]).unwrap());
             total_size += size;
             index_result = index_of(&out[..total_size], expected_message.as_bytes())
@@ -33,6 +37,7 @@ pub trait Port {
     }
 
     fn command(&mut self, message: &[u8], out: &mut [u8], expected_message: &str) -> PortResult<usize> {
+        #[cfg(feature = "std")]
         println!("> {}", std::str::from_utf8(message).unwrap());
         self.write_message(message)?;
         // TODO: handle `ERROR`s
@@ -55,6 +60,7 @@ impl<T: Port> Device<T> {
         print_response(&self.buf, size);
 
         if self.buf.starts_with(b"STATUS:") {
+            #[cfg(feature = "std")]
             println!("Status: {}", self.buf[7]);
             Ok(self.buf[7])
         } else {
@@ -118,7 +124,7 @@ impl<T: Port> Device<T> {
         let rest_of_buf = &mut buf[message_size..];
         let (total_size2, message_size2) = self.port.read_while(rest_of_buf, total_size - message_size, "CLOSED")?;
         print_response(&rest_of_buf, message_size + total_size2);
-        let str_data = std::str::from_utf8(&rest_of_buf[..message_size2]).unwrap();
+        let str_data = from_utf8(&rest_of_buf[..message_size2]).unwrap();
         let option = str_data.lines().find(|line| line.contains("HTTP") && line.ends_with("OK"));
         if option.is_none() {
             return Err(PortError::HttpError)
@@ -128,6 +134,7 @@ impl<T: Port> Device<T> {
         match (start_index, end_index) {
             (Some(start), Some(end)) => Ok(Self::parse_data(&str_data[start..end])),
             _ => {
+                #[cfg(feature = "std")]
                 println!("Failed to find json");
                 Err(PortError::HttpError)
             }
