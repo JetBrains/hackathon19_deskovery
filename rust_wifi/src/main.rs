@@ -19,8 +19,7 @@ fn main() {
 }
 
 fn do_example<T: Port>(device: &mut Device<T>) {
-    device.connect_to_wifi();
-    let result = device.ip_status();
+    device.connect_to_wifi_if_needed();
     device.make_post_request("");
 }
 
