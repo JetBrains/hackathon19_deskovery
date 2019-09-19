@@ -108,7 +108,7 @@ void LCD5110_write_string(unsigned const char *s)
     }
 }
 
-__unused void LCD5110_write_bytes(unsigned const char *s, int len)
+__unused void LCD5110_write_bytes(unsigned const char *s, unsigned int len)
 {
     for(int i =0; i < len; i++) {
         LCD5110_write_char(s[i]);
