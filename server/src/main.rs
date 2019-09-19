@@ -58,19 +58,16 @@ struct ControllerData {
     y: i16,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone, Copy)]
-struct DeskoveryData {
-    x: i32,
-    // mm
-    y: i32,
-    // mm
-    theta: i32,
-    // degree
-    proximity_sensor_1: bool,
-    proximity_sensor_2: bool,
-    proximity_sensor_3: bool,
-    proximity_sensor_4: bool,
-    distance_to_obstacle: u32,
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct DeskoveryData {
+    pub x: i32,
+    pub y: i32,
+    pub th: i32, // theta
+    pub ps1: bool, // proximity_sensor
+    pub ps2: bool,
+    pub ps3: bool,
+    pub ps4: bool,
+    pub dto: u32, // distance to object
 }
 
 impl FromDataSimple for DeskoveryData {
@@ -99,16 +96,19 @@ fn index() -> Response<'static> {
 }
 
 #[post("/poll", format = "json", data = "<deskovery_data_json>")]
-fn poll(data: State<MyData>, deskovery_data_json: Json<DeskoveryData>) -> String {
+fn poll(data: State<MyData>, deskovery_data_json: Json<Vec<DeskoveryData>>) -> String {
     let mut d = data.d.lock().unwrap();
     let deskovery_data = deskovery_data_json.0;
-    d.deskovery.push(deskovery_data);
+    println!("RECEIVED: {:?}", deskovery_data);
+    d.deskovery.extend(deskovery_data.into_iter());
 
-    let field_x = min(max(deskovery_data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
-    let field_y = min(max(deskovery_data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
-    d.field_map[field_x * FIELD_SIZE + field_y] = 1;
+//    let field_x = min(max(deskovery_data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
+//    let field_y = min(max(deskovery_data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
+//    d.field_map[field_x * FIELD_SIZE + field_y] = 1;
 
-    serde_json::to_string(&d.controller).unwrap()
+    let out = serde_json::to_string(&d.controller).unwrap();
+    println!("SENDING: {:?}", &out);
+    out
 }
 
 #[get("/push?<x>&<y>")]
