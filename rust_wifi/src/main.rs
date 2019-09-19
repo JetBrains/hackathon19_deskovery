@@ -20,7 +20,7 @@ fn main() {
 
 fn do_example<T: Port>(device: &mut Device<T>) {
     device.connect_to_wifi_if_needed();
-    device.make_post_request("");
+    device.make_post_request("", "104.236.228.23", 8000);
 }
 
 fn interact<T: SerialPort>(mut port: T) -> io::Result<StdPort<T>> {
