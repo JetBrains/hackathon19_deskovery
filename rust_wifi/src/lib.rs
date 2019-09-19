@@ -17,22 +17,25 @@ pub trait Port {
         Ok(())
     }
     fn read(&mut self, out: &mut [u8]) -> PortResult<usize>;
-    fn read_while(&mut self, out: &mut [u8], expected_message: &str) -> PortResult<usize> {
-        let mut total_size = 0;
+    // returns (total_size, size_of_expected_message)
+    fn read_while(&mut self, out: &mut [u8], mut total_size: usize, expected_message: &str) -> PortResult<(usize, usize)> {
+        let mut index_result = index_of(&out[..total_size], expected_message.as_bytes());
         // TODO: handle `ERROR`s
-        while !contains(&out[..total_size], expected_message.as_bytes()) {
+        while index_result.is_none() {
             let size = self.read(&mut out[total_size..])?;
             println!("< {}", std::str::from_utf8(&out[total_size..total_size + size]).unwrap());
             total_size += size;
+            index_result = index_of(&out[..total_size], expected_message.as_bytes())
         }
-        Ok(total_size)
+        let index = index_result.unwrap();
+        Ok((total_size, index + expected_message.len()))
     }
 
     fn command(&mut self, message: &[u8], out: &mut [u8], expected_message: &str) -> PortResult<usize> {
         println!("> {}", std::str::from_utf8(message).unwrap());
         self.write_message(message)?;
         // TODO: handle `ERROR`s
-        self.read_while(out, expected_message)
+        self.read_while(out, 0, expected_message).map(|x| x.0)
     }
 }
 
@@ -103,18 +106,19 @@ impl<T: Port> Device<T> {
     }
 
     fn read_data(&mut self) -> PortResult<Data> {
-        let mut x = [0; 1024];
+        let mut buf = [0; 1024];
 //        TODO: try to invoke convert using dereference quick fix
 //        self.port.read_while(x, )
-        self.port.read_while(&mut x, "SEND OK")?;
-        let size = self.port.read_while(&mut x, "CLOSED")?;
-        let str_data = std::str::from_utf8(&x[..size]).unwrap();
-        let option = str_data.lines().find(|line| line.starts_with("HTTP") && line.ends_with("OK"));
+        let (total_size, message_size) = self.port.read_while(&mut buf, 0, "SEND OK")?;
+        let rest_of_buf = &mut buf[message_size..];
+        let (total_size2, message_size2) = self.port.read_while(rest_of_buf, total_size - message_size, "CLOSED")?;
+        let str_data = std::str::from_utf8(&rest_of_buf[..message_size2]).unwrap();
+        let option = str_data.lines().find(|line| line.contains("HTTP") && line.ends_with("OK"));
         if option.is_none() {
             return Err(PortError::HttpError)
         }
-        print_response(&x, size);
-
+        print_response(&buf, message_size + total_size2);
+        let data = Self::parse_data("{\"x\":1, \"y\":2}");
         Ok(Data)
     }
 
@@ -126,11 +130,19 @@ impl<T: Port> Device<T> {
         let size = self.port.command(&command[..command_size], &mut self.buf, ">")?;
         self.port.write(data)
     }
+
+    fn parse_data(data: &str) -> data::ServerData {
+        serde_json_core::de::from_str(data).unwrap()
+    }
 }
 
 // TODO: make it smarter
-fn contains(src: &[u8], pattern: &[u8]) -> bool {
-    src.windows(pattern.len()).any(|s| s == pattern)
+fn index_of(src: &[u8], pattern: &[u8]) -> Option<usize> {
+    src
+        .windows(pattern.len())
+        .enumerate()
+        .find(|(_, s)| *s == pattern)
+        .map(|(i, _)| i)
 }
 
 pub struct Data;
