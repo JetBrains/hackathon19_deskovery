@@ -103,9 +103,9 @@ pub extern "C" fn rust_main() {
             }
         }
         let position = odo_computer.position();
-        output_data_line(0, 3, "X: ", || position.x as i32);
-        output_data_line(0, 4, "Y: ", || position.y as i32);
-        output_data_line(0, 5, "T: ", || (position.theta / PI * 180.0) as i32);
+        output_data_line(0, 3, "X: ", || position.x);
+        output_data_line(0, 4, "Y: ", || position.y);
+        output_data_line(0, 5, "T: ", || position.theta);
 
         debug_print("Hello, Deskovery\n\r");
 
