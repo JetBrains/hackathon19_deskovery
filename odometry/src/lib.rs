@@ -76,14 +76,13 @@ impl OdometryComputer {
         }
         self.position.x += dx as i32;
         self.position.y += dy as i32;
-        let mut new_theta = theta_radians;
-        new_theta += d_turn_angle;
-        if new_theta < 0.0 {
-            new_theta += 2.0 * PI;
-        } else if new_theta > 2.0 * PI {
-            new_theta -= 2.0 * PI;
+
+        self.position.theta += (d_turn_angle / PI * 180.0) as i32;
+        if self.position.theta < 0 {
+            self.position.theta += 360;
+        } else if self.position.theta > 360 {
+            self.position.theta -= 360;
         }
-        self.position.theta = (new_theta / PI * 180.0) as i32;
     }
 }
 
@@ -133,5 +132,20 @@ mod tests {
             0,
             Position { x: 62, y: -37, theta: 297 }
         );
+    }
+
+    #[test]
+    fn test_stand() {
+        let mut odo_computer = OdometryComputer::new();
+        odo_computer.update(500, 100);
+        assert_eq!(odo_computer.position().theta, 311);
+        odo_computer.update(500, 100);
+        assert_eq!(odo_computer.position().theta, 311);
+        odo_computer.update(500, 100);
+        assert_eq!(odo_computer.position().theta, 311);
+        odo_computer.update(500, 100);
+        assert_eq!(odo_computer.position().theta, 311);
+        odo_computer.update(500, 100);
+        assert_eq!(odo_computer.position().theta, 311);
     }
 }
