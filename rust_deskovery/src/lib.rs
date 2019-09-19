@@ -10,7 +10,7 @@ use crate::odometry::{OdometryComputer, Position};
 use compat::{display_text_xy, debug_print, display_text, PRX_BR, PRX_BL, PRX_FR, PRX_FL};
 use compat::{
     delay_ms, display_bg_control, idle, led_control, left_ticks, prxData, radar_range, right_ticks,
-    LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, /*deskovery_motor*/
+    LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, LCD5110_write_pict/*deskovery_motor*/
 };//todo make safe
 
 fn output_data_line<F>(x: u8, y: u8, label: &str, dataGetter: F)
