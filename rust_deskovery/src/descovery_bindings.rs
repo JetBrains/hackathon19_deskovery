@@ -139,3 +139,6 @@ extern "C" {
 extern "C" {
     pub fn idle();
 }
+extern "C" {
+    pub fn Error_Handler();
+}

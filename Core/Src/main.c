@@ -144,9 +144,6 @@ int main(void)
     LCD5110_init();
 
     //todo radar to rust
-    //todo remove extra code
-    //todo error handler for rust
-
 
         rust_main();
   /* USER CODE END 2 */
