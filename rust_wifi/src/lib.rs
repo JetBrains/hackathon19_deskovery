@@ -1,4 +1,5 @@
 use std::fmt::{Write, Error};
+use std::cmp::min;
 
 // TODO: add some errors
 pub enum PortError {
@@ -77,15 +78,31 @@ impl<T: Port> Device<T> {
     }
 
     pub fn make_post_request(&mut self, message: &str) -> PortResult<Data> {
+        self.establish_connection()?;
 
-        let mut command = [0; 256];
+        // Send header
+        self.send_data(b"GET /poll HTTP/1.1\n\n");
+
+        // Send data
+        let message_bytes = message.as_bytes();
+        let chunk_size = 1024;
+        // TODO: create issue with `let`
+        let chunks_count = message_bytes.len() / chunk_size + if message_bytes.len() % chunk_size == 0 { 0 } else { 1 };
+        for i in 0..chunks_count {
+            self.send_data(&message_bytes[chunk_size * i..min(chunk_size * (i + 1), message_bytes.len())]);
+        }
+
+        self.close_connection();
+        Ok(Data)
+    }
+
+    fn send_data(&mut self, data: &[u8]) -> PortResult<()> {
+        let mut command = [0; 32];
         let mut write_buf = WriteBuf::new(&mut command);
-        write!(write_buf, "AT+CIPSEND={}", message.len());
+        write!(write_buf, "AT+CIPSEND={}", data.len());
         let command_size = write_buf.count;
         let size = self.port.command(&command[..command_size], &mut self.buf, ">")?;
-
-        self.port.write(message.as_bytes());
-        Ok(Data)
+        self.port.write(data)
     }
 }
 

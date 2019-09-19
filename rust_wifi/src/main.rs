@@ -21,9 +21,7 @@ fn main() {
 fn do_example<T: Port>(device: &mut Device<T>) {
     device.connect_to_wifi();
     let result = device.ip_status();
-    device.establish_connection();
-    device.make_post_request("GET /poll HTTP/1.1\n\n");
-    device.close_connection();
+    device.make_post_request("");
 }
 
 fn interact<T: SerialPort>(mut port: T) -> io::Result<StdPort<T>> {
