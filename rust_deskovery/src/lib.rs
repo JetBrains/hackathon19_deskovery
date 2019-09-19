@@ -1,6 +1,6 @@
 #![no_std]
 #![allow(non_camel_case_types, non_upper_case_globals, non_snake_case)]
-#![feature(intrinsics)]
+#![feature(core_intrinsics)]
 
 use core::intrinsics::{cosf64, sinf64};
 use core::panic::PanicInfo;
@@ -39,35 +39,29 @@ fn display_text(x: u8, y: u8, s: &str) {
     }
 }
 
-fn output_data_line<F>(y: u8, label: &str, dataGetter: F)
-where
-    F: FnOnce() -> i32,
-{
+fn output_data_line<F>(y: u8, label: &str, dataGetter: F) where F: FnOnce() -> i32 {
     display_text(0, y, label);
     let mut buf: [u8; 10] = [0; 10];
-    let mut index = buf.len() - 1;
+    let mut index = buf.len();
     let mut val = dataGetter();
     let sign = val < 0;
     if sign {
         val = -val;
     }
     loop {
-        buf[index] = (val % 10 + 48) as u8;
         index -= 1;
+        buf[index] = (val % 10 + 48) as u8;
         val = val / 10;
         if val == 0 {
             break;
         }
     }
     if sign {
-        buf[index] = '-' as u8;
         index -= 1;
+        buf[index] = '-' as u8;
     }
     unsafe {
-        LCD5110_write_bytes(
-            buf[index + 1..].as_ptr() as *const u8,
-            (buf.len() - index - 1) as u32,
-        );
+        LCD5110_write_bytes(buf[index..].as_ptr() as *const u8, (buf.len()  - index) as u32);
     }
 }
 
@@ -110,21 +104,17 @@ pub extern "C" fn rust_main() {
             LCD5110_clear();
             display_text(0, 0, "This is RUST!");
 
-            let left_ticks = left_ticks(); //todo fix types
-            let right_ticks = right_ticks(); //todo fix types
-            let system_ticks = system_ticks();
-
-            output_data_line(1, "B:     ", || brightness);
-            output_data_line(2, "Rng:   ", || radar_range());
-            output_data_line(3, "Left:  ", || left_ticks);
-            output_data_line(4, "Right: ", || right_ticks);
+            output_data_line(1, "B: ", || brightness);
+            output_data_line(2, "Rng: ", || radar_range());
+            output_data_line(3, "Left : ", || left_ticks() );
+            output_data_line(4, "Right: ", || right_ticks());
 
             LCD5110_set_XY(3, 5);
             LCD5110_write_char(alarm_char(0));
             LCD5110_write_char(alarm_char(1));
             LCD5110_write_char(alarm_char(2));
             LCD5110_write_char(alarm_char(3));
-            odo_computer.compute_odometry(left_ticks, right_ticks);
+            odo_computer.compute_odometry(left_ticks(), right_ticks());
 
             // TODO: f64 printing
             // output_data_line(4, "x:     ", || position.x);
@@ -159,7 +149,7 @@ fn cos(x: f64) -> f64 {
     unsafe { cosf64(x) }
 }
 
-impl OdometryComputer {
+impl OdometryComputer<'_> {
     fn compute_odometry(&mut self, tachoL: i32, tachoR: i32) {
         let dL = tachoL - self.oldTachoL;
         self.oldTachoL = tachoL;
@@ -174,20 +164,20 @@ impl OdometryComputer {
         let dx;
         let dy;
         if turnRadius.is_infinite() || turnRadius.is_nan() {
-            dx = dTrackAvr * cos(self.theta);
-            dy = dTrackAvr * sin(self.theta);
+            dx = dTrackAvr * cos(self.position.theta);
+            dy = dTrackAvr * sin(self.position.theta);
         } else {
-            let turnAngle = self.theta - PI / 2.0;
+            let turnAngle = self.position.theta - PI / 2.0;
             dx = turnRadius * (cos(turnAngle + dTurnAngle) - cos(turnAngle));
             dy = turnRadius * (sin(turnAngle + dTurnAngle) - sin(turnAngle));
         }
-        self.x += dx;
-        self.y += dy;
-        self.theta += dTurnAngle;
-        if self.theta < 0.0 {
-            self.theta += 2.0 * PI;
-        } else if self.theta > 2.0 * PI {
-            self.theta -= 2.0 * PI;
+        self.position.x += dx;
+        self.position.y += dy;
+        self.position.theta += dTurnAngle;
+        if self.position.theta < 0.0 {
+            self.position.theta += 2.0 * PI;
+        } else if self.position.theta > 2.0 * PI {
+            self.position.theta -= 2.0 * PI;
         }
     }
 }

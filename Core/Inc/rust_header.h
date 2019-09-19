@@ -30,7 +30,7 @@ void LCD5110_clear(void);
 
 void LCD5110_set_XY(unsigned char X,unsigned char Y);
 
-void LCD5110_write_bytes(unsigned const char *s, int len);
+void LCD5110_write_bytes(unsigned const char *s, unsigned int len);
 
 void LCD5110_write_pict(const unsigned char *p);
 
