@@ -118,10 +118,17 @@ impl<T: Port> Device<T> {
     pub fn make_post_request(&mut self, data: &[DeskoveryData], ip: &str, port: u32) -> PortResult<ServerData> {
         self.establish_connection(ip, port)?;
 
-        let data_str = serde_json_core::ser::to_string::<[u8; 1500], _>(data).unwrap();
+        let mut final_data = data;
+        let mut data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
+        while data_str_result.is_err() {
+            final_data = &final_data[1..final_data.len()];
+            data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
+        }
+
+        let data_str = data_str_result.unwrap();
         let data_bytes = data_str.as_str();
 
-        let mut command = [0; 1500];
+        let mut command = [0; 1600];
         let mut write_buf = WriteBuf::new(&mut command);
 
 

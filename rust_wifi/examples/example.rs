@@ -22,7 +22,7 @@ fn main() {
 fn do_example<T: Port>(device: &mut Device<T>) {
     device.connect_to_wifi_if_needed();
     let data = DeskoveryData::default();
-    device.make_post_request(&[data; 10], "104.236.228.23", 8001);
+    device.make_post_request(&[data; 20], "104.236.228.23", 8001);
 }
 
 fn interact<T: SerialPort>(mut port: T) -> io::Result<StdPort<T>> {
