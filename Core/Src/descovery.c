@@ -89,6 +89,7 @@ void deskoveryInit(void) {
     HAL_TIM_Encoder_Start(&EL_TIM, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&ER_TIM, TIM_CHANNEL_ALL);
     setupSensor(&centerSensor);
+    LCD5110_init();
 }
 
 void deskoveryReadEncoders() {
@@ -146,8 +147,19 @@ __unused void led_control(bool on) {
 }
 
 __unused void delay_ms(long ms) {
-    //todo idle call in the cycle
-    HAL_Delay(ms);
+    uint32_t tickstart = HAL_GetTick();
+    uint32_t wait = ms;
+
+    /* Add a period to guaranty minimum wait */
+    if (wait < HAL_MAX_DELAY)
+    {
+        wait += (uint32_t)(uwTickFreq);
+    }
+
+    while((HAL_GetTick() - tickstart) < wait)
+    {
+        idle();
+    }
 }
 
 __unused void display_bg_control(int brightness) {
