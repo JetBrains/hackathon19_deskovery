@@ -1,5 +1,6 @@
 use std::fmt::{Write, Error};
 use std::cmp::min;
+use data::ServerData;
 
 // TODO: add some errors
 pub enum PortError {
@@ -82,7 +83,7 @@ impl<T: Port> Device<T> {
         Ok(())
     }
 
-    pub fn make_post_request(&mut self, message: &str) -> PortResult<Data> {
+    pub fn make_post_request(&mut self, message: &str) -> PortResult<ServerData> {
         self.establish_connection()?;
 
         // Send header
@@ -102,21 +103,29 @@ impl<T: Port> Device<T> {
         Ok(data)
     }
 
-    fn read_data(&mut self) -> PortResult<Data> {
+    fn read_data(&mut self) -> PortResult<ServerData> {
         let mut buf = [0; 1024];
 //        TODO: try to invoke convert using dereference quick fix
 //        self.port.read_while(x, )
         let (total_size, message_size) = self.port.read_while(&mut buf, 0, "SEND OK")?;
+        print_response(&buf, message_size);
         let rest_of_buf = &mut buf[message_size..];
         let (total_size2, message_size2) = self.port.read_while(rest_of_buf, total_size - message_size, "CLOSED")?;
+        print_response(&rest_of_buf, message_size + total_size2);
         let str_data = std::str::from_utf8(&rest_of_buf[..message_size2]).unwrap();
         let option = str_data.lines().find(|line| line.contains("HTTP") && line.ends_with("OK"));
         if option.is_none() {
             return Err(PortError::HttpError)
         }
-        print_response(&buf, message_size + total_size2);
-        let data = Self::parse_data("{\"x\":1, \"y\":2}");
-        Ok(Data)
+        let start_index = str_data.find("{");
+        let end_index = str_data.find("}");
+        match (start_index, end_index) {
+            (Some(start), Some(end)) => Ok(Self::parse_data(&str_data[start..end])),
+            _ => {
+                println!("Failed to find json");
+                Err(PortError::HttpError)
+            }
+        }
     }
 
     fn send_data(&mut self, data: &[u8]) -> PortResult<()> {
@@ -128,7 +137,7 @@ impl<T: Port> Device<T> {
         self.port.write(data)
     }
 
-    fn parse_data(data: &str) -> data::ServerData {
+    fn parse_data(data: &str) -> ServerData {
         serde_json_core::de::from_str(data).unwrap()
     }
 }
@@ -141,8 +150,6 @@ fn index_of(src: &[u8], pattern: &[u8]) -> Option<usize> {
         .find(|(_, s)| *s == pattern)
         .map(|(i, _)| i)
 }
-
-pub struct Data;
 
 fn print_response(buf: &[u8], size: usize) {
 //    println!("{}", std::str::from_utf8(&buf[..size]).unwrap());
