@@ -10,8 +10,12 @@ const WHEEL_TICK_IN_CM: f64 = WHEEL_TICKS_PER_CIRCLE as f64 / WHEEL_CIRCLE_LEN_C
 const WHEEL_RADIUS_TICKS: f64 = WHEEL_RADIUS_CM * WHEEL_TICK_IN_CM;
 const WHEEL_BASE_TICKS: f64 = WHEEL_BASE_CM * WHEEL_TICK_IN_CM;
 
-fn sin(x: f64) -> f64 { unsafe { sinf64(x) } }
-fn cos(x: f64) -> f64 { unsafe { cosf64(x) } }
+fn sin(x: f64) -> f64 {
+    unsafe { sinf64(x) }
+}
+fn cos(x: f64) -> f64 {
+    unsafe { cosf64(x) }
+}
 
 pub struct Position {
     pub x: f64,

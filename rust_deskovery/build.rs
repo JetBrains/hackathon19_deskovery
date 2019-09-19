@@ -1,7 +1,7 @@
 use std::env;
 use std::path::PathBuf;
 
-fn generate_rust_bindings(out_path: PathBuf) {
+fn generate_rust_bindings(_out_path: PathBuf) {
     //let result_path = out_path.join("descovery_bindings.rs");
     let result_path = PathBuf::from("src").join("descovery_bindings.rs");
 
@@ -14,12 +14,11 @@ fn generate_rust_bindings(out_path: PathBuf) {
     let builder = bindgen::Builder::default()
         .header("../Core/Inc/rust_header.h")
         .use_core()
-        .ctypes_prefix("crate::libc")
+        .ctypes_prefix("crate::compat::libc")
         .clang_args(includes.iter().map(|include| format!("-I{}", include)))
         .clang_arg("--target=thumbv7em-none-eabi")
         .clang_arg("--verbose")
-        .clang_arg("-nostdinc")
-        ;
+        .clang_arg("-nostdinc");
 
     let bindings = builder.generate().expect("Unable to generate bindings");
 
