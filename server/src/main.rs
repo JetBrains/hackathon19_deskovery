@@ -12,6 +12,7 @@ use rocket::{Data, State};
 use rocket::{Outcome::*, Request, Response};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
+use std::cmp::{min, max};
 
 struct MyData {
     d: Mutex<_MyData>,
@@ -25,9 +26,12 @@ impl MyData {
     }
 }
 
+const FIELD_SIZE: usize = 10000;
+
 struct _MyData {
     controller: ControllerData,
     deskovery: Vec<DeskoveryData>,
+    field_map: [[u8; FIELD_SIZE]; FIELD_SIZE],
 }
 
 impl _MyData {
@@ -35,6 +39,7 @@ impl _MyData {
         _MyData {
             controller: ControllerData { x: 0, y: 0 },
             deskovery: vec![],
+            field_map: [[0u8; FIELD_SIZE]; FIELD_SIZE],
         }
     }
 }
@@ -45,11 +50,11 @@ struct ControllerData {
     y: i16,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Clone, Copy)]
 struct DeskoveryData {
-    x: f64,
-    y: f64,
-    theta: f64,
+    x: i32,     // mm
+    y: i32,     // mm
+    theta: i32, // degree
     proximity_sensor_1: bool,
     proximity_sensor_2: bool,
     proximity_sensor_3: bool,
@@ -82,10 +87,16 @@ fn index() -> Response<'static> {
         .finalize()
 }
 
-#[post("/poll", format = "json", data = "<deskovery_data>")]
-fn poll(data: State<MyData>, deskovery_data: Json<DeskoveryData>) -> String {
+#[post("/poll", format = "json", data = "<deskovery_data_json>")]
+fn poll(data: State<MyData>, deskovery_data_json: Json<DeskoveryData>) -> String {
     let mut d = data.d.lock().unwrap();
-    d.deskovery.push(deskovery_data.0);
+    let deskovery_data = deskovery_data_json.0;
+    d.deskovery.push(deskovery_data);
+
+    let field_x = min(max(deskovery_data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
+    let field_y = min(max(deskovery_data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
+    d.field_map[field_x][field_y] = 1;
+
     serde_json::to_string(&d.controller).unwrap()
 }
 
