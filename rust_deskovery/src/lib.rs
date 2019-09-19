@@ -92,7 +92,7 @@ pub extern "C" fn rust_main() {
             if ((odo_computer.position().x as i32 - start_x).pow(2) +
                 (odo_computer.position().y as i32 - start_y).pow(2)) < 900
             {
-                if (!about_start) {
+                if !about_start {
                     deskovery_motor(-600, -400, false);
                     about_start = true;
                     start_x = odo_computer.position().x as i32;
@@ -103,9 +103,9 @@ pub extern "C" fn rust_main() {
             }
         }
         let position = odo_computer.position();
-        output_data_line(0, 3, "X: ", || position.x);
-        output_data_line(0, 4, "Y: ", || position.y);
-        output_data_line(0, 5, "T: ", || position.theta);
+        output_data_line(0, 3, "X: ", || position.x as i32);
+        output_data_line(0, 4, "Y: ", || position.y as i32);
+        output_data_line(0, 5, "T: ", || (position.theta / PI * 180.0) as i32);
 
         debug_print("Hello, Deskovery\n\r");
 
