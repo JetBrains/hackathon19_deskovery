@@ -91,7 +91,6 @@ pub extern "C" fn rust_main() {
         //todo test odometry
         debug_print("Hello, Deskovery\n\r");
 
-        // TODO: f64 printing
         // output_data_line(4, "x:     ", || position.x);
         // output_data_line(4, "y:     ", || position.y);
 

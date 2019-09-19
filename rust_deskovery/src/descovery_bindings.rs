@@ -132,11 +132,11 @@ extern "C" {
     pub fn debug_output(p: *const crate::compat::libc::c_uchar, len: crate::compat::libc::c_uint);
 }
 extern "C" {
-    pub fn uart_output(p: *const crate::compat::libc::c_uchar, len: crate::compat::libc::c_int);
+    pub fn uart_output(p: *const crate::compat::libc::c_char, len: crate::compat::libc::c_int);
 }
 extern "C" {
     pub fn uart_input(
-        p: *const crate::compat::libc::c_uchar,
+        p: *mut crate::compat::libc::c_char,
         maxLen: crate::compat::libc::c_int,
     ) -> crate::compat::libc::c_int;
 }
