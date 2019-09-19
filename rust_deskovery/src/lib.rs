@@ -4,6 +4,7 @@
 
 mod compat;
 mod odometry;
+mod generated_images;
 
 use crate::odometry::{OdometryComputer, Position};
 use compat::{display_text_xy, debug_print, display_text, PRX_BR, PRX_BL, PRX_FR, PRX_FL};
@@ -71,9 +72,7 @@ pub extern "C" fn rust_main() {
     loop {
         unsafe {
             idle();
-            led_control(true);
             delay_ms(300);
-            led_control(false);
             brightness = (brightness + 10) % 100;
             display_bg_control(brightness);
             LCD5110_clear();
@@ -82,13 +81,22 @@ pub extern "C" fn rust_main() {
             output_data_line(0, 1, "L: ", || left_ticks());
             output_data_line(0, 2, "R: ", || right_ticks());
 
-            LCD5110_set_XY(12, 0);
-            LCD5110_write_char(alarm_char(PRX_BR));
-            LCD5110_write_char(alarm_char(PRX_BL));
+            LCD5110_write_pict( &generated_images::CLION_LOGO_BYTES as *const u8);
+//            LCD5110_clear();
+//            display_text(0, 0, "This is RUST!");
+//
+//            output_data_line(1, "B: ", || brightness);
+//            output_data_line(2, "Rng: ", || radar_range());
+//            output_data_line(3, "Left : ", || left_ticks());
+//            output_data_line(4, "Right: ", || right_ticks());
+//
+//            LCD5110_set_XY(12, 0);
+//            LCD5110_write_char(alarm_char(PRX_BR));
+//            LCD5110_write_char(alarm_char(PRX_BL));
             LCD5110_set_XY(12, 1);
-            LCD5110_write_char(alarm_char(PRX_FR));
-            LCD5110_write_char(alarm_char(PRX_FL));
-            odo_computer.update(left_ticks(), right_ticks());
+//            LCD5110_write_char(alarm_char(PRX_FR));
+//            LCD5110_write_char(alarm_char(PRX_FL));
+//            odo_computer.update(left_ticks(), right_ticks());
 
 //            deskovery_motor(400, 400, false);
             //todo test odometry
