@@ -128,14 +128,15 @@ void HAL_ADCEx_InjectedConvCpltCallback(__unused ADC_HandleTypeDef *hadc) {
         prxData.darkResponse[2] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
         prxData.darkResponse[3] = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_4);
     }
-    if (prxData.alarm) {
-        HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_1);
-        HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_2);
-    } else {
-        HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_1);
-        HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_2);
-
-    }
+    // TODO sensors are not working properly
+//    if (prxData.alarm) {
+//        HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_1);
+//        HAL_TIM_PWM_Stop(&HMOTOR_TIM, TIM_CHANNEL_2);
+//    } else {
+//        HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_1);
+//        HAL_TIM_PWM_Start(&HMOTOR_TIM, TIM_CHANNEL_2);
+//
+//    }
 
     prxLedOn = !prxLedOn;
     HAL_GPIO_WritePin(PRX_EN_GPIO_Port, PRX_EN_Pin, prxLedOn ? GPIO_PIN_SET : GPIO_PIN_RESET);
