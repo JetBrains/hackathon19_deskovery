@@ -17,7 +17,7 @@ extern volatile PrxData prxData;
 
 long left_ticks();
 long right_ticks();
-int radar_range();//todo implement
+int radar_range();
 
 unsigned long system_ticks();
 void led_control(bool on);
@@ -42,4 +42,7 @@ void uart_output(const unsigned char *p, int len);  //todo implement
 int  uart_input(const unsigned char *p, int maxLen);  //todo implement
 
 void idle();  //todo implement
+
+void Error_Handler(void);
+
 #endif //HACKATHON19_DESKOVERY_RUST_HEADER_H

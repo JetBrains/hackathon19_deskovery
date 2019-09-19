@@ -19,7 +19,11 @@ fn panic(_info: &PanicInfo) -> ! {
 
     // logs "panicked at '$reason', src/main.rs:27:4" to the host stderr
     //    writeln!(host_stderr, "{}", info).ok();
-    loop {}
+    unsafe {
+        loop{
+            Error_Handler()
+        }
+    }
 }
 
 pub fn display_text(x: u8, y: u8, s: &str) {
