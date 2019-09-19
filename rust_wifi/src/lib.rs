@@ -3,7 +3,8 @@ use std::cmp::min;
 
 // TODO: add some errors
 pub enum PortError {
-    Error
+    Error,
+    HttpError
 }
 
 pub type PortResult<T> = Result<T, PortError>;
@@ -16,18 +17,22 @@ pub trait Port {
         Ok(())
     }
     fn read(&mut self, out: &mut [u8]) -> PortResult<usize>;
+    fn read_while(&mut self, out: &mut [u8], expected_message: &str) -> PortResult<usize> {
+        let mut total_size = 0;
+        // TODO: handle `ERROR`s
+        while !contains(&out[..total_size], expected_message.as_bytes()) {
+            let size = self.read(&mut out[total_size..])?;
+            println!("< {}", std::str::from_utf8(&out[total_size..total_size + size]).unwrap());
+            total_size += size;
+        }
+        Ok(total_size)
+    }
+
     fn command(&mut self, message: &[u8], out: &mut [u8], expected_message: &str) -> PortResult<usize> {
         println!("> {}", std::str::from_utf8(message).unwrap());
         self.write_message(message)?;
-        let mut size = 0;
         // TODO: handle `ERROR`s
-        while !contains(&out[..size], expected_message.as_bytes()) {
-            let new_size = self.read(&mut out[size..])?;
-            println!("< {}", std::str::from_utf8(&out[size..size + new_size]).unwrap());
-            size += new_size;
-
-        }
-        Ok(size)
+        self.read_while(out, expected_message)
     }
 }
 
@@ -92,7 +97,24 @@ impl<T: Port> Device<T> {
             self.send_data(&message_bytes[chunk_size * i..min(chunk_size * (i + 1), message_bytes.len())]);
         }
 
+        let data = self.read_data()?;
         self.close_connection();
+        Ok(data)
+    }
+
+    fn read_data(&mut self) -> PortResult<Data> {
+        let mut x = [0; 1024];
+//        TODO: try to invoke convert using dereference quick fix
+//        self.port.read_while(x, )
+        self.port.read_while(&mut x, "SEND OK")?;
+        let size = self.port.read_while(&mut x, "CLOSED")?;
+        let str_data = std::str::from_utf8(&x[..size]).unwrap();
+        let option = str_data.lines().find(|line| line.starts_with("HTTP") && line.ends_with("OK"));
+        if option.is_none() {
+            return Err(PortError::HttpError)
+        }
+        print_response(&x, size);
+
         Ok(Data)
     }
 
