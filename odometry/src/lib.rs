@@ -64,6 +64,8 @@ impl OdometryComputer {
         let left_mm = left_ticks as f64 / WHEEL_TICK_IN_MM;
         let right_mm = right_ticks as f64 / WHEEL_TICK_IN_MM;
 
+        // NB: all further computations operate with mm
+
         let d_left = left_mm - self.old_left_mm;
         self.old_left_mm = left_mm;
         let d_right = right_mm - self.old_right_mm;
@@ -71,7 +73,7 @@ impl OdometryComputer {
 
         let d_track = d_right - d_left;
         let d_track_avr = (d_right + d_left) / 2.0;
-        let d_turn_angle = d_track / WHEEL_BASE_TICKS;
+        let d_turn_angle = d_track / WHEEL_BASE_MM;
         let turn_radius = d_track_avr / d_turn_angle;
         let dx;
         let dy;
@@ -106,7 +108,7 @@ mod tests {
     }
 
     #[test]
-    fn test_1() {
+    fn test_forward() {
         do_test(
             WHEEL_TICKS_PER_CIRCLE,
             WHEEL_TICKS_PER_CIRCLE,
@@ -115,11 +117,30 @@ mod tests {
     }
 
     #[test]
-    fn test_2() {
+    fn test_backward() {
         do_test(
-            WHEEL_TICKS_PER_CIRCLE / 2,
-            WHEEL_TICKS_PER_CIRCLE,
-            Position { x: 163.440176, y: 19.160761, theta: 0.233402 }
+            -WHEEL_TICKS_PER_CIRCLE,
+            -WHEEL_TICKS_PER_CIRCLE,
+            Position { x: -WHEEL_CIRCLE_LEN_MM, y: 0.0, theta: 0.0 }
+        );
+    }
+
+
+    #[test]
+    fn test_forward_twice() {
+        let mut odo_computer = OdometryComputer::new();
+        odo_computer.update(WHEEL_TICKS_PER_CIRCLE, WHEEL_TICKS_PER_CIRCLE);
+        odo_computer.update(2 * WHEEL_TICKS_PER_CIRCLE, 2 * WHEEL_TICKS_PER_CIRCLE);
+        let actual = odo_computer.position();
+        assert_eq!(actual, Position { x: 2.0 * WHEEL_CIRCLE_LEN_MM, y: 0.0, theta: 0.0 });
+    }
+
+    #[test]
+    fn test_turn() {
+        do_test(
+            10,
+            0,
+            Position { x: 1.485776, y: -0.015769, theta: 6.261958 }
         );
     }
 }
