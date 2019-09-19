@@ -10,9 +10,8 @@ use core::f64::consts::PI;
 use compat::{display_text_xy, debug_print, display_text, PRX_BR, PRX_BL, PRX_FR, PRX_FL, robot_idle};
 use compat::{
     delay_ms, display_bg_control, led_control, left_ticks, prxData, radar_range, right_ticks,
-    LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, LCD5110_write_pict, /*deskovery_motor*/
-};
-use crate::compat::deskovery_motor;//todo make safe
+    LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, LCD5110_write_pict, deskovery_motor
+}; //todo make safe
 
 fn output_data_line<F>(x: u8, y: u8, label: &str, dataGetter: F)
     where
@@ -107,15 +106,8 @@ pub extern "C" fn rust_main() {
         output_data_line(0, 4, "Y: ", || position.y as i32);
         output_data_line(0, 5, "T: ", || (position.theta / PI * 180.0) as i32);
 
-//            deskovery_motor(400, 400, false);
-        //todo test odometry
         debug_print("Hello, Deskovery\n\r");
 
-        // output_data_line(4, "x:     ", || position.x);
-        // output_data_line(4, "y:     ", || position.y);
 
-        /*
-                    void debug_output(const unsigned char *p, unsigned int len); //todo implement
-        */
     }
 }
