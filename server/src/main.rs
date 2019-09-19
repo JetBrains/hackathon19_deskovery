@@ -13,29 +13,30 @@ use rocket::http::{ContentType, Status};
 
 
 struct MyData {
-    d: Mutex<_MyData>,
-    deskovery_data_vec: Mutex<Vec<DeskoveryData>>,
+    d: Mutex<_MyData>
 }
 
 impl MyData {
     fn new() -> Self {
-        MyData {
-            d: Mutex::new(_MyData::new()),
-            deskovery_data_vec: Mutex::new(vec![])
-        }
+        MyData { d: Mutex::new(_MyData::new()) }
     }
 }
 
 struct _MyData {
-    x: i16,
-    y: i16,
+    controller: ControllerData,
+    deskovery: Vec<DeskoveryData>
 }
 
 impl _MyData {
     fn new() -> _MyData {
-        _MyData { x: 0, y: 0 }
+        _MyData {
+            controller: ControllerData { x: 0, y: 0 },
+            deskovery: vec![],
+        }
     }
 }
+
+struct ControllerData { x: i16, y: i16 }
 
 #[derive(Deserialize)]
 struct DeskoveryData {
@@ -93,10 +94,9 @@ fn index() -> Response<'static> {
 
 #[post("/poll", format = "json", data = "<deskovery_data>")]
 fn poll(data: State<MyData>, deskovery_data: Json<DeskoveryData>) -> String {
-    let d = data.d.lock().unwrap();
-    let mut deskovery_data_vec = data.deskovery_data_vec.lock().unwrap();
-    deskovery_data_vec.push(deskovery_data.0);
-    format!("x: {}; y: {}", d.x, d.y)
+    let mut d = data.d.lock().unwrap();
+    d.deskovery.push(deskovery_data.0);
+    format!("x: {}; y: {}", d.controller.x, d.controller.y)
 }
 
 #[get("/push?<x>&<y>")]
@@ -107,8 +107,8 @@ fn push(data: State<MyData>, x: String, y: String) {
             let x = (x * 1000.0) as i16;
             let y = (y * 1000.0) as i16;
             let mut d = data.d.lock().unwrap();
-            d.x = x;
-            d.y = y;
+            d.controller.x = x;
+            d.controller.y = y;
         }
         _ => println!("Invalid input!")
     }
