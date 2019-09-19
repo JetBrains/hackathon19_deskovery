@@ -103,7 +103,7 @@ fn get_image_screen_pixels<P: AsRef<Path>>(
 }
 
 fn generate_image_data(out_path: PathBuf) {
-    let lines = ["images/clion_logo.png", "images/rust_logo.png"]
+    let lines = ["images/clion_logo.png", "images/rust_logo.png", "images/clion_logo_norm.png"]
         .into_iter()
         .map(|image_path| {
             let image_bytes = get_image_screen_pixels(
