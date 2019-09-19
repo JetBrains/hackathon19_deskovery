@@ -1,15 +1,15 @@
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default, Copy, Clone)]
 pub struct DeskoveryData {
-    x: f64,
-    y: f64,
-    theta: f64,
-    proximity_sensor_1: bool,
-    proximity_sensor_2: bool,
-    proximity_sensor_3: bool,
-    proximity_sensor_4: bool,
-    distance_to_obstacle: u32,
+    pub x: i32,
+    pub y: i32,
+    pub th: i32,
+    pub ps1: bool,
+    pub ps2: bool,
+    pub ps3: bool,
+    pub ps4: bool,
+    pub dto: u32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -19,7 +19,7 @@ pub enum RequestType {
 
 #[derive(Serialize, Deserialize)]
 pub struct ServerData {
-    x: i32,
-    y: i32,
-    theta: f64,
+    pub x: i32,
+    pub y: i32,
+//    pub theta: f64,
 }

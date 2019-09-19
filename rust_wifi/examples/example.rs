@@ -9,6 +9,7 @@ use serial::prelude::*;
 use serial::SystemPort;
 
 use wifi::{Port, PortResult, Device};
+use data::DeskoveryData;
 
 fn main() {
     let res = serial::open("/dev/cu.usbserial-14200");
@@ -20,7 +21,8 @@ fn main() {
 
 fn do_example<T: Port>(device: &mut Device<T>) {
     device.connect_to_wifi_if_needed();
-    device.make_post_request("", "104.236.228.23", 8000);
+    let data = DeskoveryData::default();
+    device.make_post_request(&[data; 10], "104.236.228.23", 8001);
 }
 
 fn interact<T: SerialPort>(mut port: T) -> io::Result<StdPort<T>> {

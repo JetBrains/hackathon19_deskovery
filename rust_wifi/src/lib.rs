@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use data::ServerData;
+use data::{ServerData, DeskoveryData};
 use core::cmp::min;
 use core::fmt::{Write, Error};
 use core::str::from_utf8;
@@ -22,26 +22,42 @@ pub trait Port {
     }
     fn read(&mut self, out: &mut [u8]) -> PortResult<usize>;
     // returns (total_size, size_of_expected_message)
-    fn read_while(&mut self, out: &mut [u8], mut total_size: usize, expected_message: &str) -> PortResult<(usize, usize)> {
-        let mut index_result = index_of(&out[..total_size], expected_message.as_bytes());
+    fn read_while(&mut self, out: &mut [u8], mut total_size: usize, expected_messages: &[&str]) -> PortResult<(usize, usize)> {
+        let mut index_result = None;
+        let mut message_len = 0;
+        for expected_message in expected_messages {
+            let res = index_of(&out[..total_size], expected_message.as_bytes());
+            if res.is_some() {
+                index_result = res;
+                message_len = expected_message.len();
+                break;
+            }
+        }
         // TODO: handle `ERROR`s
         while index_result.is_none() {
             let size = self.read(&mut out[total_size..])?;
             #[cfg(feature = "std")]
             println!("< {}", std::str::from_utf8(&out[total_size..total_size + size]).unwrap());
             total_size += size;
-            index_result = index_of(&out[..total_size], expected_message.as_bytes())
+            for expected_message in expected_messages {
+                let res = index_of(&out[..total_size], expected_message.as_bytes());
+                if res.is_some() {
+                    index_result = res;
+                    message_len = expected_message.len();
+                    break;
+                }
+            }
         }
         let index = index_result.unwrap();
-        Ok((total_size, index + expected_message.len()))
+        Ok((total_size, index + message_len))
     }
 
-    fn command(&mut self, message: &[u8], out: &mut [u8], expected_message: &str) -> PortResult<usize> {
+    fn command(&mut self, message: &[u8], out: &mut [u8], expected_messages: &[&str]) -> PortResult<usize> {
         #[cfg(feature = "std")]
         println!("> {}", std::str::from_utf8(message).unwrap());
         self.write_message(message)?;
         // TODO: handle `ERROR`s
-        self.read_while(out, 0, expected_message).map(|x| x.0)
+        self.read_while(out, 0, expected_messages).map(|x| x.0)
     }
 }
 
@@ -56,7 +72,7 @@ impl<T: Port> Device<T> {
     }
 
     pub fn ip_status(&mut self) -> PortResult<u8> {
-        let size = self.port.command(b"AT+CIPSTATUS", &mut self.buf, "OK")?;
+        let size = self.port.command(b"AT+CIPSTATUS", &mut self.buf, &["OK"])?;
         print_response(&self.buf, size);
 
         if self.buf.starts_with(b"STATUS:") {
@@ -70,15 +86,19 @@ impl<T: Port> Device<T> {
 
     pub fn connect_to_wifi_if_needed(&mut self) -> PortResult<()> {
         let status = self.ip_status()?;
-        if status != 2 {
-            let size = self.port.command(b"AT+CWJAP=\"JetBrains-Guest\",\"deskoverynet\"", &mut self.buf[..], "OK")?;
-            print_response(&self.buf, size);
-        }
+        match status {
+            2 => return Ok(()),
+            3 => self.close_connection()?,
+            _ => {}
+        };
+
+        let size = self.port.command(b"AT+CWJAP=\"JetBrains-Guest\",\"deskoverynet\"", &mut self.buf[..], &["OK"])?;
+        print_response(&self.buf, size);
         return Ok(());
     }
 
     pub fn close_connection(&mut self) -> PortResult<()> {
-        let size = self.port.command(b"AT+CIPCLOSE", &mut self.buf, "CLOSED")?;
+        let size = self.port.command(b"AT+CIPCLOSE", &mut self.buf, &["CLOSED"])?;
         print_response(&self.buf, size);
         Ok(())
     }
@@ -90,28 +110,30 @@ impl<T: Port> Device<T> {
         let command_size = write_buf.count;
         let command_slice = &command[..command_size];
 
-        let size = self.port.command(command_slice, &mut self.buf, "OK")?;
+        let size = self.port.command(command_slice, &mut self.buf, &["OK"])?;
         print_response(&self.buf, size);
         Ok(())
     }
 
-    pub fn make_post_request(&mut self, message: &str, ip: &str, port: u32) -> PortResult<ServerData> {
+    pub fn make_post_request(&mut self, data: &[DeskoveryData], ip: &str, port: u32) -> PortResult<ServerData> {
         self.establish_connection(ip, port)?;
 
-        // Send header
-        self.send_data(b"GET /poll HTTP/1.1\n\n");
+        let data_str = serde_json_core::ser::to_string::<[u8; 1500], _>(data).unwrap();
+        let data_bytes = data_str.as_str();
 
+        let mut command = [0; 1500];
+        let mut write_buf = WriteBuf::new(&mut command);
+
+
+        write!(write_buf, "POST /poll HTTP/1.1\nContent-Type: application/json\nContent-Length: {}\n\n{}\n", data_str.len(), data_str.as_str());
+        let command_size = write_buf.count;
+        let command_slice = &command[..command_size];
         // Send data
-        let message_bytes = message.as_bytes();
-        let chunk_size = 1024;
-        // TODO: create issue with `let`
-        let chunks_count = message_bytes.len() / chunk_size + if message_bytes.len() % chunk_size == 0 { 0 } else { 1 };
-        for i in 0..chunks_count {
-            self.send_data(&message_bytes[chunk_size * i..min(chunk_size * (i + 1), message_bytes.len())]);
-        }
+        self.send_data(command_slice);
 
         let data = self.read_data()?;
-        self.close_connection();
+
+//        self.close_connection();
         Ok(data)
     }
 
@@ -119,10 +141,10 @@ impl<T: Port> Device<T> {
         let mut buf = [0; 1024];
 //        TODO: try to invoke convert using dereference quick fix
 //        self.port.read_while(x, )
-        let (total_size, message_size) = self.port.read_while(&mut buf, 0, "SEND OK")?;
+        let (total_size, message_size) = self.port.read_while(&mut buf, 0, &["SEND OK"])?;
         print_response(&buf, message_size);
         let rest_of_buf = &mut buf[message_size..];
-        let (total_size2, message_size2) = self.port.read_while(rest_of_buf, total_size - message_size, "CLOSED")?;
+        let (total_size2, message_size2) = self.port.read_while(rest_of_buf, total_size - message_size, &["CLOSED"])?;
         print_response(&rest_of_buf, message_size + total_size2);
         let str_data = from_utf8(&rest_of_buf[..message_size2]).unwrap();
         let option = str_data.lines().find(|line| line.contains("HTTP") && line.ends_with("OK"));
@@ -132,7 +154,7 @@ impl<T: Port> Device<T> {
         let start_index = str_data.find("{");
         let end_index = str_data.find("}");
         match (start_index, end_index) {
-            (Some(start), Some(end)) => Ok(Self::parse_data(&str_data[start..end])),
+            (Some(start), Some(end)) => Ok(Self::parse_data(&str_data[start..end + 1])),
             _ => {
                 #[cfg(feature = "std")]
                 println!("Failed to find json");
@@ -142,13 +164,17 @@ impl<T: Port> Device<T> {
     }
 
     fn send_data(&mut self, data: &[u8]) -> PortResult<()> {
-        let mut command = [0; 32];
+        let mut command = [0; 1024];
         let mut write_buf = WriteBuf::new(&mut command);
         write!(write_buf, "AT+CIPSEND={}", data.len());
         let command_size = write_buf.count;
         let command_slice = &command[..command_size];
-        let size = self.port.command(command_slice, &mut self.buf, ">")?;
-        self.port.write(data)
+        let size = self.port.command(command_slice, &mut self.buf, &[">"])?;
+        #[cfg(feature = "std")]
+        println!("> {}", from_utf8(command_slice).unwrap());
+        self.port.write(data);
+//        self.port.read_while(&mut command, 0, "SEND OK")?;
+        Ok(())
     }
 
     fn parse_data(data: &str) -> ServerData {
@@ -166,7 +192,8 @@ fn index_of(src: &[u8], pattern: &[u8]) -> Option<usize> {
 }
 
 fn print_response(buf: &[u8], size: usize) {
-//    println!("{}", std::str::from_utf8(&buf[..size]).unwrap());
+    #[cfg(feature = "std")]
+    println!("{}", std::str::from_utf8(&buf[..size]).unwrap());
 }
 
 struct WriteBuf<'a> {
