@@ -3,6 +3,7 @@
 #![feature(core_intrinsics)]
 
 mod compat;
+#[allow(dead_code)]
 mod generated_images;
 
 use odometry::{OdometryComputer, Position};
