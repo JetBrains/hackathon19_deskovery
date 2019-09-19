@@ -3,6 +3,10 @@
 pub const true_: u32 = 1;
 pub const false_: u32 = 0;
 pub const __bool_true_false_are_defined: u32 = 1;
+pub const PRX_FL: u32 = 3;
+pub const PRX_FR: u32 = 1;
+pub const PRX_BL: u32 = 0;
+pub const PRX_BR: u32 = 2;
 extern "C" {
     pub fn deskovery_motor(
         pwrLeft: crate::compat::libc::c_int,

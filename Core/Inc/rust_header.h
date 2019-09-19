@@ -36,13 +36,19 @@ void LCD5110_write_pict(const unsigned char *p);
 
 void delay_ms(long ms);
 
-void debug_output(const unsigned char *p, unsigned int len); //todo implement
+void debug_output(const unsigned char *p, unsigned int len);
 
 void uart_output(const unsigned char *p, int len);  //todo implement
 int  uart_input(const unsigned char *p, int maxLen);  //todo implement
 
-void idle();  //todo implement
+void idle();
 
 void Error_Handler(void);
+
+#define PRX_FL 3
+#define PRX_FR 1
+#define PRX_BL 0
+#define PRX_BR 2
+
 
 #endif //HACKATHON19_DESKOVERY_RUST_HEADER_H

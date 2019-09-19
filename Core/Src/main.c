@@ -140,12 +140,7 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
     deskoveryInit();
-
-    LCD5110_init();
-
-    //todo radar to rust
-
-        rust_main();
+    rust_main();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -157,42 +152,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_GPIO_TogglePin(PRX_EN_GPIO_Port,PRX_EN_Pin);
-    HAL_Delay(1);
-
-      HAL_StatusTypeDef adcStatus = HAL_ADCEx_InjectedPollForConversion(&hadc1, 100);
-
-      if(adcStatus != HAL_OK) {
-          printf("ADC error %d...\n", adcStatus);
-      } else {
-          printf("ADC results: %5d %5d %5d %5d\n",
-                 (int)HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_1),
-                 (int) HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_2),
-                 (int)HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_3),
-                 (int)HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_4)
-                  );
-      }
-
-    HAL_Delay(200);
-      HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-      __HAL_TIM_SET_COMPARE(&htim1,  TIM_CHANNEL_3, 99);
-      long l = left_ticks();
-      long r = right_ticks();
-      deskovery_motor(400, 400, false);
-      while ((left_ticks() + right_ticks() - l - r) < 2000) {
-          measureAll();
-      }
-
-      r = right_ticks();
-      deskovery_motor(0, 300, false);
-      while ((right_ticks() - r ) < 866) {
-          measureAll();
-      }
-
-      deskovery_motor(0, 0, false);
-      HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-
-      HAL_Delay(100);
   }
 #pragma clang diagnostic pop
   /* USER CODE END 3 */

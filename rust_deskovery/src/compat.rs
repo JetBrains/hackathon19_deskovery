@@ -21,15 +21,26 @@ fn panic(_info: &PanicInfo) -> ! {
     //    writeln!(host_stderr, "{}", info).ok();
     unsafe {
         loop{
-            Error_Handler()
+            Error_Handler();
         }
     }
 }
 
-pub fn display_text(x: u8, y: u8, s: &str) {
+pub fn display_text(s: &str) {
     unsafe {
-        LCD5110_set_XY(x, y);
         let bytes = s.as_bytes();
         LCD5110_write_bytes(bytes.as_ptr() as *const u8, bytes.len() as u32);
+    }
+}
+pub fn display_text_xy(x: u8, y: u8, s: &str) {
+    unsafe {
+        LCD5110_set_XY(x, y);
+    }
+    display_text(s);
+}
+
+pub fn debug_print(s: &str) {
+    unsafe {
+        debug_output(s.as_ptr(),s.len() as libc::c_uint);
     }
 }

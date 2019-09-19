@@ -127,11 +127,6 @@ void deskoveryReadEncoders(void);
 #define EL_TIM htim5
 #define ER_TIM htim8
 
-#define PRX_FL 3
-#define PRX_FR 1
-#define PRX_BL 0
-#define PRX_BR 2
-
 extern void rust_main();
 /* USER CODE END Private defines */
 
