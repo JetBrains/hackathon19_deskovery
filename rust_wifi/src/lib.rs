@@ -30,66 +30,71 @@ pub trait Port {
     }
 }
 
+pub struct Device<T : Port> {
+    port: T,
+    buf: [u8; 1024]
+}
+
+impl<T: Port> Device<T> {
+    pub fn new(port: T) -> Device<T> {
+        Device { port, buf: [0; 1024] }
+    }
+
+    pub fn ip_status(&mut self) -> PortResult<u8> {
+        let size = self.port.command(b"AT+CIPSTATUS", &mut self.buf, "OK")?;
+        print_response(&self.buf, size);
+
+        if self.buf.starts_with(b"STATUS:") {
+            println!("Status: {}", self.buf[7]);
+            Ok(self.buf[7])
+        } else {
+            Err(PortError::Error)
+        }
+    }
+
+    pub fn connect_to_wifi(&mut self) -> PortResult<()> {
+        let size = self.port.command(b"AT", &mut self.buf[..], "OK")?;
+        print_response(&self.buf, size);
+
+        let size = self.port.command(b"AT+CWMODE=1", &mut self.buf[..], "OK")?;
+        print_response(&self.buf, size);
+
+        let size = self.port.command(b"AT+CWJAP=\"JetBrains-Guest\",\"wifiusers90\"", &mut self.buf[..], "OK")?;
+        print_response(&self.buf, size);
+        return Ok(());
+    }
+
+    pub fn close_connection(&mut self) -> PortResult<()> {
+        let size = self.port.command(b"AT+CIPCLOSE", &mut self.buf, "CLOSED")?;
+        print_response(&self.buf, size);
+        Ok(())
+    }
+
+    pub fn establish_connection(&mut self) -> PortResult<()> {
+        let size = self.port.command(b"AT+CIPSTART=\"TCP\",\"104.236.228.23\",8000", &mut self.buf, "OK")?;
+        print_response(&self.buf, size);
+        Ok(())
+    }
+
+    pub fn make_post_request(&mut self, message: &str) -> PortResult<Data> {
+
+        let mut command = [0; 256];
+        let mut write_buf = WriteBuf::new(&mut command);
+        write!(write_buf, "AT+CIPSEND={}", message.len());
+        let command_size = write_buf.count;
+        let size = self.port.command(&command[..command_size], &mut self.buf, ">")?;
+
+        self.port.write(message.as_bytes());
+        Ok(Data)
+    }
+}
+
 // TODO: make it smarter
 fn contains(src: &[u8], pattern: &[u8]) -> bool {
     src.windows(pattern.len()).any(|s| s == pattern)
 }
 
-pub fn connect_to_wifi<T : Port>(port: &mut T) -> PortResult<()> {
-    let mut buf = [0; 256];
-
-    let size = port.command(b"AT", &mut buf[..], "OK")?;
-    print_response(&buf, size);
-
-
-    let size = port.command(b"AT+CWMODE=1", &mut buf[..], "OK")?;
-    print_response(&buf, size);
-
-    let size = port.command(b"AT+CWJAP=\"JetBrains-Guest\",\"wifiusers90\"", &mut buf[..], "OK")?;
-    print_response(&buf, size);
-    return Ok(());
-}
-
-pub fn ip_status<T : Port>(port: &mut T) -> PortResult<u8> {
-    let mut buf = [0; 256];
-    let size = port.command(b"AT+CIPSTATUS", &mut buf, "OK")?;
-    print_response(&buf, size);
-
-    if buf.starts_with(b"STATUS:") {
-        println!("Status: {}", buf[7]);
-        Ok(buf[7])
-    } else {
-        Err(PortError::Error)
-    }
-}
-
-pub fn close_connection<T : Port>(port: &mut T) -> PortResult<()> {
-    let mut buf = [0; 256];
-    let size = port.command(b"AT+CIPCLOSE", &mut buf, "CLOSED")?;
-    print_response(&buf, size);
-    Ok(())
-}
-
-pub fn establish_connection<T : Port>(port: &mut T) -> PortResult<()> {
-    let mut buf = [0; 256];
-    let size = port.command(b"AT+CIPSTART=\"TCP\",\"104.236.228.23\",8000", &mut buf, "OK")?;
-    print_response(&buf, size);
-    Ok(())
-}
-
-pub fn send_data<T : Port>(port: &mut T, message: &str) -> PortResult<()> {
-    let mut command = [0; 256];
-
-    let mut write_buf = WriteBuf::new(&mut command);
-    let mut buf = [0; 256];
-
-    write!(&mut write_buf, "AT+CIPSEND={}", message.len());
-    let command_size = write_buf.count;
-    let size = port.command(&command[..command_size], &mut buf, ">")?;
-
-    port.write(message.as_bytes());
-    Ok(())
-}
+pub struct Data;
 
 fn print_response(buf: &[u8], size: usize) {
 //    println!("{}", std::str::from_utf8(&buf[..size]).unwrap());
