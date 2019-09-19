@@ -8,10 +8,11 @@ build = "build.rs"
 
 [lib]
 name = "rust_deskovery"
-crate-type = ["staticlib"]
+crate-type = ["staticlib", "rlib"]
 
 [build-dependencies]
 bindgen = "0.51"
 image = "0.22"
 
 [dependencies]
+odometry = { path = "../odometry" }
