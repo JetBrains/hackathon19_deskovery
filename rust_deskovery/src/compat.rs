@@ -48,3 +48,5 @@ pub fn debug_print(s: &str) {
 }
 
 pub fn robot_idle() { unsafe { idle(); } }
+
+pub fn sensor_radar_range() -> i32 { unsafe { radar_range() } }
