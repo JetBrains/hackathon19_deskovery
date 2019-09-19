@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 rocket = "0.4.2"
+rocket_contrib = "0.4.2"
+serde = { version = "1.0.101", default-features = false, features = ["derive"] }
