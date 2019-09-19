@@ -28,6 +28,7 @@ fn generate_rust_bindings(out_path: PathBuf) {
         .expect("Couldn't write bindings!");
 }
 
+#[allow(dead_code)]
 enum OutputMode {
     NetPBM,
     ScreenBytes,
@@ -102,23 +103,33 @@ fn get_image_screen_pixels<P: AsRef<Path>>(
 }
 
 fn generate_image_data(out_path: PathBuf) {
-    let image_bytes_file = out_path.join("generated_images.rs");
-    let clion_logo_bytes = get_image_screen_pixels(
-        "images/clion_logo.png",
-        DISPLAY_WIDTH,
-        DISPLAY_HEIGHT,
-        OutputMode::ScreenBytes,
-    );
+    let lines = ["images/clion_logo.png", "images/rust_logo.png"]
+        .into_iter()
+        .map(|image_path| {
+            let image_bytes = get_image_screen_pixels(
+                image_path,
+                DISPLAY_WIDTH,
+                DISPLAY_HEIGHT,
+                OutputMode::ScreenBytes,
+            );
 
-    fs::write(
-        image_bytes_file,
-        format!(
-            "pub const CLION_LOGO_BYTES: [u8; {}] = {:?};",
-            clion_logo_bytes.len(),
-            clion_logo_bytes
-        ),
-    )
-    .unwrap()
+            let separator_index = image_path.find('/').unwrap();
+            let extension_index = image_path.rfind('.').unwrap();
+            let variable_name = format!(
+                "{}_BYTES",
+                &image_path[separator_index + 1..extension_index]
+            )
+            .to_uppercase();
+            format!(
+                "pub const {}: [u8; {}] = {:?};",
+                variable_name,
+                image_bytes.len(),
+                image_bytes
+            )
+        })
+        .collect::<Vec<_>>();
+
+    fs::write(out_path.join("generated_images.rs"), lines.join("\n")).unwrap()
 }
 
 fn main() {

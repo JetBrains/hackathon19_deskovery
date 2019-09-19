@@ -20,7 +20,7 @@ fn panic(_info: &PanicInfo) -> ! {
     // logs "panicked at '$reason', src/main.rs:27:4" to the host stderr
     //    writeln!(host_stderr, "{}", info).ok();
     unsafe {
-        loop{
+        loop {
             Error_Handler();
         }
     }
@@ -41,6 +41,6 @@ pub fn display_text_xy(x: u8, y: u8, s: &str) {
 
 pub fn debug_print(s: &str) {
     unsafe {
-        debug_output(s.as_ptr(),s.len() as libc::c_uint);
+        debug_output(s.as_ptr(), s.len() as libc::c_uint);
     }
 }
