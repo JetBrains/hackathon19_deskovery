@@ -61,15 +61,12 @@ impl<T: Port> Device<T> {
         }
     }
 
-    pub fn connect_to_wifi(&mut self) -> PortResult<()> {
-        let size = self.port.command(b"AT", &mut self.buf[..], "OK")?;
-        print_response(&self.buf, size);
-
-        let size = self.port.command(b"AT+CWMODE=1", &mut self.buf[..], "OK")?;
-        print_response(&self.buf, size);
-
-        let size = self.port.command(b"AT+CWJAP=\"JetBrains-Guest\",\"deskoverynet\"", &mut self.buf[..], "OK")?;
-        print_response(&self.buf, size);
+    pub fn connect_to_wifi_if_needed(&mut self) -> PortResult<()> {
+        let status = self.ip_status()?;
+        if status != 2 {
+            let size = self.port.command(b"AT+CWJAP=\"JetBrains-Guest\",\"deskoverynet\"", &mut self.buf[..], "OK")?;
+            print_response(&self.buf, size);
+        }
         return Ok(());
     }
 
