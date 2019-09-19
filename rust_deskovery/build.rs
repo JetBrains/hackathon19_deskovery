@@ -5,12 +5,7 @@ fn generate_rust_bindings(out_path: PathBuf) {
     //let result_path = out_path.join("descovery_bindings.rs");
     let result_path = PathBuf::from("src").join("descovery_bindings.rs");
 
-    if result_path.is_file() {
-        // TODO uncomment
-        //        return;
-    }
-
-    let includes = ["/usr/local/lib/gcc/arm-none-eabi/7.3.1/include"];
+    let includes = ["/usr/local/lib/gcc/arm-none-eabi/7.3.1/include","C:\\tools\\GNU Tools Arm Embedded\\7 2018-q2-update\\lib\\gcc\\arm-none-eabi\\7.3.1\\include"];
 
     let builder = bindgen::Builder::default()
         .header("../Core/Inc/rust_header.h")
@@ -19,7 +14,8 @@ fn generate_rust_bindings(out_path: PathBuf) {
         .clang_args(includes.iter().map(|include| format!("-I{}", include)))
         .clang_arg("--target=thumbv7em-none-eabi")
         .clang_arg("--verbose")
-        .clang_arg("-nostdinc");
+        .clang_arg("-nostdinc")
+        ;
 
     let bindings = builder.generate().expect("Unable to generate bindings");
 
