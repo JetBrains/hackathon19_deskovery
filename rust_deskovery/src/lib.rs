@@ -11,7 +11,8 @@ use compat::{display_text_xy, debug_print, display_text, PRX_BR, PRX_BL, PRX_FR,
 use compat::{
     delay_ms, display_bg_control, led_control, left_ticks, prxData, radar_range, right_ticks,
     LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, LCD5110_write_pict, /*deskovery_motor*/
-};//todo make safe
+};
+use crate::compat::deskovery_motor;//todo make safe
 
 fn output_data_line<F>(x: u8, y: u8, label: &str, dataGetter: F)
     where
@@ -56,13 +57,20 @@ pub extern "C" fn rust_main() {
     let mut brightness: i32 = 0;
 
     let mut odo_computer = OdometryComputer::new();
-
+    let mut about_start = true;
+    let mut start_x = 0;
+    let mut start_y = 0;
+    unsafe {
+        deskovery_motor(200, 300, false);
+    }
     loop {
         robot_idle();
         unsafe {
+/*
             delay_ms(300);
             brightness = (brightness + 10) % 100;
             display_bg_control(brightness);
+*/
             LCD5110_clear();
 
 //            LCD5110_write_pict( &generated_images::RUST_LOGO_BYTES as *const u8);
@@ -81,6 +89,18 @@ pub extern "C" fn rust_main() {
             LCD5110_write_char(alarm_char(PRX_FR));
             LCD5110_write_char(alarm_char(PRX_FL));
             odo_computer.update(left_ticks(), right_ticks());
+            if ((odo_computer.position().x as i32 - start_x).pow(2) +
+                (odo_computer.position().y as i32 - start_y).pow(2)) < 900
+            {
+                if (!about_start) {
+                    deskovery_motor(-600, -400, false);
+                    about_start = true;
+                    start_x = odo_computer.position().x as i32;
+                    start_y = odo_computer.position().y as i32;
+                }
+            } else {
+                about_start = false;
+            }
         }
         let position = odo_computer.position();
         output_data_line(0, 3, "X: ", || position.x as i32);
