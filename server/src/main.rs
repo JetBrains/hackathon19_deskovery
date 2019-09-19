@@ -13,6 +13,7 @@ use rocket::{Outcome::*, Request, Response};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 use std::cmp::{min, max};
+use image::{ImageFormat, ImageBuffer, Rgba, Luma};
 
 struct MyData {
     d: Mutex<_MyData>,
@@ -26,12 +27,12 @@ impl MyData {
     }
 }
 
-const FIELD_SIZE: usize = 10000;
+const FIELD_SIZE: usize = 1000;
 
 struct _MyData {
     controller: ControllerData,
     deskovery: Vec<DeskoveryData>,
-    field_map: [[u8; FIELD_SIZE]; FIELD_SIZE],
+    field_map: [u8; FIELD_SIZE * FIELD_SIZE],
 }
 
 impl _MyData {
@@ -39,7 +40,7 @@ impl _MyData {
         _MyData {
             controller: ControllerData { x: 0, y: 0 },
             deskovery: vec![],
-            field_map: [[0u8; FIELD_SIZE]; FIELD_SIZE],
+            field_map: [0u8; FIELD_SIZE * FIELD_SIZE],
         }
     }
 }
@@ -95,7 +96,7 @@ fn poll(data: State<MyData>, deskovery_data_json: Json<DeskoveryData>) -> String
 
     let field_x = min(max(deskovery_data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
     let field_y = min(max(deskovery_data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
-    d.field_map[field_x][field_y] = 1;
+    d.field_map[field_x * FIELD_SIZE + field_y] = 1;
 
     serde_json::to_string(&d.controller).unwrap()
 }
@@ -113,6 +114,18 @@ fn push(data: State<MyData>, x: String, y: String) {
         }
         _ => println!("Invalid input!"),
     }
+}
+
+#[get("/map")]
+fn get_map(data: State<MyData>) -> Response<'static> {
+    let mut d = data.d.lock().unwrap();
+    let v = &d.field_map.to_vec();
+    let img: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::from_vec(FIELD_SIZE as u32, FIELD_SIZE as u32, v.clone()).unwrap();
+    let bdy = include_str!("index.html").to_string();
+    Response::build()
+        .header(ContentType::HTML)
+        .sized_body(Cursor::new(bdy))
+        .finalize()
 }
 
 fn main() {
