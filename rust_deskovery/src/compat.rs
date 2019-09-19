@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 use core::panic::PanicInfo;
 
 pub mod libc {
@@ -32,6 +33,7 @@ pub fn display_text(s: &str) {
         LCD5110_write_bytes(bytes.as_ptr() as *const u8, bytes.len() as u32);
     }
 }
+
 pub fn display_text_xy(x: u8, y: u8, s: &str) {
     unsafe {
         LCD5110_set_XY(x, y);
@@ -44,3 +46,5 @@ pub fn debug_print(s: &str) {
         debug_output(s.as_ptr(), s.len() as libc::c_uint);
     }
 }
+
+pub fn robot_idle() { unsafe { idle(); } }
