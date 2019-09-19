@@ -14,7 +14,6 @@ static volatile int64_t right_ticks_var = 0;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
-
 static inline void runMotorChannel(int pwr, GPIO_TypeDef *dirPort, uint16_t dirPin, uint16_t motorChannel) {
     if (pwr >= 0) {
         HAL_GPIO_WritePin(dirPort, dirPin, GPIO_PIN_RESET);
@@ -90,6 +89,7 @@ void deskoveryInit(void) {
     HAL_TIM_Encoder_Start(&ER_TIM, TIM_CHANNEL_ALL);
     setupSensor(&centerSensor);
     LCD5110_init();
+    setupWifi();
 }
 
 void deskoveryReadEncoders() {
@@ -211,16 +211,12 @@ __unused void debug_output(const unsigned char *p, unsigned int len) {
     HAL_UART_Transmit(&huart2, (uint8_t *) p, len, 1000);
 }
 
-__unused void uart_output(const unsigned char *p, int len) {
-    HAL_UART_Transmit(&huart3, (uint8_t *) p, len, 1000);
-}
-
-__unused int uart_input(const unsigned char *p, int maxLen);  //todo implement
-
 void idle() {
     runRadar();
+    unsigned char buf[4];
 }
 
 __unused int radar_range() {
     return rangeData.RangeStatus == 0 ? rangeData.RangeMilliMeter : -1;
 }
+

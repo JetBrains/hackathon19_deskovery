@@ -127,7 +127,9 @@ void deskoveryReadEncoders(void);
 #define EL_TIM htim5
 #define ER_TIM htim8
 
-extern void rust_main();
+void rust_main();
+void setupWifi();
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

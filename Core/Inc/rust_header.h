@@ -38,8 +38,8 @@ void delay_ms(long ms);
 
 void debug_output(const unsigned char *p, unsigned int len);
 
-void uart_output(const unsigned char *p, int len);  //todo implement
-int  uart_input(const unsigned char *p, int maxLen);  //todo implement
+void uart_output(const char *p, int len);
+int  uart_input(char *p, int maxLen);
 
 void idle();
 
