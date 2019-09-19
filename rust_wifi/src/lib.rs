@@ -77,14 +77,20 @@ impl<T: Port> Device<T> {
         Ok(())
     }
 
-    pub fn establish_connection(&mut self) -> PortResult<()> {
-        let size = self.port.command(b"AT+CIPSTART=\"TCP\",\"104.236.228.23\",8000", &mut self.buf, "OK")?;
+    pub fn establish_connection(&mut self, ip: &str, port: u32) -> PortResult<()> {
+        let mut command = [0; 128];
+        let mut write_buf = WriteBuf::new(&mut command);
+        write!(write_buf, "AT+CIPSTART=\"TCP\",\"{}\",{}", ip, port);
+        let command_size = write_buf.count;
+        let command_slice = &command[..command_size];
+
+        let size = self.port.command(command_slice, &mut self.buf, "OK")?;
         print_response(&self.buf, size);
         Ok(())
     }
 
-    pub fn make_post_request(&mut self, message: &str) -> PortResult<ServerData> {
-        self.establish_connection()?;
+    pub fn make_post_request(&mut self, message: &str, ip: &str, port: u32) -> PortResult<ServerData> {
+        self.establish_connection(ip, port)?;
 
         // Send header
         self.send_data(b"GET /poll HTTP/1.1\n\n");
@@ -133,7 +139,8 @@ impl<T: Port> Device<T> {
         let mut write_buf = WriteBuf::new(&mut command);
         write!(write_buf, "AT+CIPSEND={}", data.len());
         let command_size = write_buf.count;
-        let size = self.port.command(&command[..command_size], &mut self.buf, ">")?;
+        let command_slice = &command[..command_size];
+        let size = self.port.command(command_slice, &mut self.buf, ">")?;
         self.port.write(data)
     }
 
