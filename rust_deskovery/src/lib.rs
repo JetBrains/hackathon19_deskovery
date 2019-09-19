@@ -108,7 +108,5 @@ pub extern "C" fn rust_main() {
         output_data_line(0, 5, "T: ", || (position.theta / PI * 180.0) as i32);
 
         debug_print("Hello, Deskovery\n\r");
-
-
     }
 }
