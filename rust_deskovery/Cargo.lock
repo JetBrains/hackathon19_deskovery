@@ -401,6 +401,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "odometry"
+version = "0.1.0"
+
+[[package]]
 name = "peeking_take_while"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -481,6 +485,7 @@ version = "0.1.0"
 dependencies = [
  "bindgen 0.51.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.22.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "odometry 0.1.0",
 ]
 
 [[package]]
