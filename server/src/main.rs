@@ -188,11 +188,11 @@ fn get_map(data: State<MyData>) -> Response<'static> {
     let mut f = File::open("img.bmp").unwrap();
     f.read(&mut buffer).unwrap();
 
-    let zz = serde_json::to_string(&d.deskovery).unwrap();
+//    let zz = serde_json::to_string(&d.deskovery).unwrap();
 
     Response::build()
-        .header(ContentType::Plain)
-        .sized_body(Cursor::new(zz))
+        .header(ContentType::BMP)
+        .sized_body(Cursor::new(buffer))
         .finalize()
 }
 
