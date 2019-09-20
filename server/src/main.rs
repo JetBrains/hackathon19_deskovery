@@ -33,7 +33,7 @@ impl MyData {
     }
 }
 
-const FIELD_SIZE: usize = 500;
+const FIELD_SIZE: usize = 2000;
 const FIELD_COLOR: u8 = 255;
 
 struct _MyData {
