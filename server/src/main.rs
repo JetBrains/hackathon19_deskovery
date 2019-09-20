@@ -215,7 +215,7 @@ fn main() {
     c.set_keep_alive(0);
     rocket::custom(c)
         .manage(MyData::new())
-        .mount("/", routes![index, poll, push, get_map, get_map_data, delete_map_data])
+        .mount("/", routes![index, poll, push, get_map, get_map_data, delete_map_data, get_map_raw])
         .launch();
 }
 
