@@ -45,7 +45,7 @@ struct _MyData {
 impl _MyData {
     fn new() -> _MyData {
         _MyData {
-            controller: ControllerData { x: 0, y: 0 },
+            controller: ControllerData { x: 0, y: 0, b1: false, b2: false, b3: false, b4: false },
             deskovery: vec![],
             field_map: [0u8; FIELD_SIZE * FIELD_SIZE],
         }
@@ -56,6 +56,10 @@ impl _MyData {
 struct ControllerData {
     x: i16,
     y: i16,
+    pub b1: bool,
+    pub b2: bool,
+    pub b3: bool,
+    pub b4: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -101,6 +105,9 @@ fn poll(data: State<MyData>, deskovery_data_json: Json<Vec<DeskoveryData>>) -> S
     let deskovery_data = deskovery_data_json.0;
     println!("RECEIVED: {:?}", deskovery_data);
     d.deskovery.extend(deskovery_data.into_iter());
+    if d.deskovery.len() > 100 {
+        d.deskovery.clear() // TODO
+    }
 
 //    let field_x = min(max(deskovery_data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
 //    let field_y = min(max(deskovery_data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
@@ -111,8 +118,8 @@ fn poll(data: State<MyData>, deskovery_data_json: Json<Vec<DeskoveryData>>) -> S
     out
 }
 
-#[get("/push?<x>&<y>")]
-fn push(data: State<MyData>, x: String, y: String) {
+#[get("/push?<x>&<y>&<b1>&<b2>&<b3>&<b4>")]
+fn push(data: State<MyData>, x: String, y: String, b1: String, b2: String, b3: String, b4: String) {
     println!("Accept x: {}; y: {}", x, y);
     match (x.parse::<f64>().ok(), y.parse::<f64>().ok()) {
         (Some(x), Some(y)) => {
@@ -121,6 +128,10 @@ fn push(data: State<MyData>, x: String, y: String) {
             let mut d = data.d.lock().unwrap();
             d.controller.x = x;
             d.controller.y = y;
+            d.controller.b1 = b1 == "true";
+            d.controller.b2 = b2 == "true";
+            d.controller.b3 = b3 == "true";
+            d.controller.b4 = b4 == "true";
         }
         _ => println!("Invalid input!"),
     }
