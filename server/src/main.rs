@@ -17,6 +17,7 @@ use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 use bmp::{Image, Pixel};
 use std::fs::File;
+use std::cmp::{min, max};
 
 
 struct MyData {
@@ -32,6 +33,7 @@ impl MyData {
 }
 
 const FIELD_SIZE: usize = 1000;
+const FIELD_COLOR: u8 = 255;
 
 struct _MyData {
     controller: ControllerData,
@@ -59,7 +61,7 @@ struct ControllerData {
     pub b4: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone, Copy)]
 pub struct DeskoveryData {
     pub x: i32,
     pub y: i32,
@@ -107,11 +109,13 @@ fn poll(data: State<MyData>, deskovery_data_json: Json<Vec<DeskoveryData>>) -> S
 
     let deskovery_data = deskovery_data_json.0;
     println!("RECEIVED: {:?}", deskovery_data);
-    descovery_data.extend(deskovery_data.into_iter());
+    descovery_data.extend(deskovery_data.clone().into_iter());
 
-//    let field_x = min(max(deskovery_data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
-//    let field_y = min(max(deskovery_data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
-//    d.field_map[field_x * FIELD_SIZE + field_y] = 1;
+    for data in &deskovery_data {
+        let field_x = min(max(data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
+        let field_y = min(max(data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
+        d.field_map[field_x * FIELD_SIZE + field_y] = FIELD_COLOR;
+    }
 
     let out = serde_json::to_string(&d.controller).unwrap();
     println!("SENDING: {:?}", &out);
@@ -162,20 +166,20 @@ fn delete_map_data(data: State<MyData>) -> Response<'static> {
 fn get_map(data: State<MyData>) -> Response<'static> {
     let d = data.d.lock().unwrap();
 
-    let v = vec![
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 255, 255, 255, 0, 0, 0,
-        0, 0, 255, 255, 255, 0, 0, 0,
-        0, 0, 255, 255, 255, 0, 0, 0,
-        0, 0, 255, 255, 255, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
-    ];
+//    let v = vec![
+//        0, 0, 0, 0, 0, 0, 0, 0,
+//        0, 0, 0, 0, 0, 0, 0, 0,
+//        0, 0, 255, 255, 255, 0, 0, 0,
+//        0, 0, 255, 255, 255, 0, 0, 0,
+//        0, 0, 255, 255, 255, 0, 0, 0,
+//        0, 0, 255, 255, 255, 0, 0, 0,
+//        0, 0, 0, 0, 0, 0, 0, 0,
+//        0, 0, 0, 0, 0, 0, 0, 0
+//    ];
 
-    let mut my_bmp = Image::new(8, 8);
+    let mut my_bmp = Image::new(FIELD_SIZE as u32, FIELD_SIZE as u32);
     for (x, y) in my_bmp.coordinates() {
-        my_bmp.set_pixel(x, y, px!(x, y, v[(x * 8 + y) as usize]));
+        my_bmp.set_pixel(x, y, px!(x, y, d.field_map[(x * FIELD_SIZE as u32 + y) as usize]));
     }
     my_bmp.save("img.bmp").unwrap();
 
