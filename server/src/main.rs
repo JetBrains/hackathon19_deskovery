@@ -65,8 +65,10 @@ struct ControllerData {
 pub struct DeskoveryData {
     pub x: i32,
     pub y: i32,
-    pub th: i32, // theta
-    pub ps1: bool, // proximity_sensor
+    pub th: i32,
+    // theta
+    pub ps1: bool,
+    // proximity_sensor
     pub ps2: bool,
     pub ps3: bool,
     pub ps4: bool,
@@ -201,4 +203,107 @@ fn main() {
         .manage(MyData::new())
         .mount("/", routes![index, poll, push, get_map, get_map_data, delete_map_data])
         .launch();
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{DeskoveryData, FIELD_SIZE};
+    use bmp::{Image, Pixel};
+    use image::{ImageBuffer, ImageFormat};
+    use std::collections::HashSet;
+
+    #[test]
+    fn test() {
+        let mock_data = r#"[{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":87},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":92},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":86},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":85},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":87},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":84},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":87},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":88},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":85},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":83},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":87},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":100},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":82},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":81},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":82},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":88},{"x":36,"y":0,"th":0,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":84},{"x":44,"y":-2,"th":288,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":830},{"x":47,"y":-15,"th":47,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":739},{"x":47,"y":-15,"th":47,"ps1":true,"ps2":true,"ps3":true,"ps4":true,"dto":-1},{"x":47,"y":-15,"th":47,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":77},{"x":348,"y":-195,"th":315,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":67},{"x":381,"y":-90,"th":202,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":63},{"x":375,"y":-93,"th":207,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":65},{"x":386,"y":23,"th":321,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":69},{"x":1153,"y":-538,"th":326,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":57},{"x":2018,"y":-1052,"th":331,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":45},{"x":2120,"y":-978,"th":100,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":39},{"x":2044,"y":-841,"th":0,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":-1},{"x":2036,"y":-841,"th":220,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":434},{"x":2036,"y":-840,"th":232,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":455},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":426},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":423},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":419},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":380},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":380},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":373},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":377},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":312},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":321},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":359},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":399},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":413},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":391},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":408},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":411},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":407},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":396},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":377},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":384},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":372},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":367},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":380},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":384},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":393},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":397},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":388},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":380},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":387},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":393},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":388},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":389},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":383},{"x":2021,"y":-1277,"th":269,"ps1":false,"ps2":false,"ps3":false,"ps4":false,"dto":394}]"#;
+        let deskovery_data: Vec<DeskoveryData> = serde_json::from_str(mock_data).unwrap();
+
+        if deskovery_data.is_empty() {
+            return;
+        }
+
+        let mut min_x: Option<i32> = None;
+        let mut max_x: Option<i32> = None;
+        let mut min_y: Option<i32> = None;
+        let mut max_y: Option<i32> = None;
+
+        for data in &deskovery_data {
+            if min_x.is_none() || data.x < min_x.unwrap() {
+                min_x = Some(data.x);
+            }
+            if max_x.is_none() || data.x > max_x.unwrap() {
+                max_x = Some(data.x);
+            }
+            if min_y.is_none() || data.y < min_y.unwrap() {
+                min_y = Some(data.y);
+            }
+            if max_y.is_none() || data.y > max_y.unwrap() {
+                max_y = Some(data.y);
+            }
+        }
+
+        let min_x: i32 = min_x.unwrap();
+        let max_x: i32 = max_x.unwrap();
+        let min_y: i32 = min_y.unwrap();
+        let max_y: i32 = max_y.unwrap();
+
+        let scale_x = FIELD_SIZE as f64 / (max_x - min_x) as f64;
+        let scale_y = FIELD_SIZE as f64 / (max_y - min_y) as f64;
+
+
+        let mut test_pbm = Image::new(FIELD_SIZE as u32 + 1, FIELD_SIZE as u32 + 1);
+        for i in 0..FIELD_SIZE as u32 + 1 {
+            for j in 0..FIELD_SIZE as u32 + 1 {
+                test_pbm.set_pixel(i, j, Pixel {
+                    r: 255,
+                    g: 255,
+                    b: 255,
+                });
+            }
+        }
+
+        deskovery_data.iter().for_each(|DeskoveryData { x, y, .. }| {
+            let image_x = ((x - min_x) as f64 * scale_x) as u32;
+            let image_y = ((y - min_y) as f64 * scale_y) as u32;
+            dbg!(image_x, image_y, "====");
+            draw_square(&mut test_pbm, image_x, image_y);
+        });
+
+        test_pbm.save("test.pbm").unwrap();
+    }
+
+    fn draw_square(image: &mut Image, center_x: u32, center_y: u32) {
+        let mut square_axes = Vec::with_capacity(9);
+
+        square_axes.push((center_x, center_y));
+        square_axes.push((center_x + 1, center_y));
+        square_axes.push((center_x + 1, center_y + 1));
+        square_axes.push((center_x, center_y + 1));
+
+        let square_size = 4;
+
+        let square_start_x = center_x as i32 - square_size;
+        let square_start_y = center_y as i32 - square_size;
+
+        if center_x != 0 {
+            square_axes.push((center_x - 1, center_y));
+            square_axes.push((center_x - 1, center_y + 1));
+            if center_y != 0 {
+                square_axes.push((center_x - 1, center_y - 1));
+            }
+        }
+
+        if center_y != 0 {
+            square_axes.push((center_x + 1, center_y - 1));
+            square_axes.push((center_x, center_y - 1));
+        }
+
+        square_axes.into_iter()
+            .for_each(|(x, y)| {
+                image.set_pixel(x, y, Pixel {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                })
+            });
+    }
 }
