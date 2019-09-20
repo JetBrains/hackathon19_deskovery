@@ -103,7 +103,7 @@ fn index() -> Response<'static> {
 
 #[post("/poll", format = "json", data = "<deskovery_data_json>")]
 fn poll(data: State<MyData>, deskovery_data_json: Json<Vec<DeskoveryData>>) -> String {
-    let mut d = data.d.lock().unwrap();
+    let mut d = data.d.lock().unwrap_or_else(|e| e.into_inner());
     let descovery_data = &mut d.deskovery;
 
     if descovery_data.len() >= 1000 {
@@ -146,7 +146,7 @@ fn push(data: State<MyData>, x: String, y: String, b1: String, b2: String, b3: S
 
 #[get("/map_data")]
 fn get_map_data(data: State<MyData>) -> Response<'static> {
-    let d = data.d.lock().unwrap();
+    let d = data.d.lock().unwrap_or_else(|e| e.into_inner());
     Response::build()
         .header(ContentType::Plain)
         .sized_body(Cursor::new(serde_json::to_string(&d.deskovery).unwrap()))
@@ -155,7 +155,7 @@ fn get_map_data(data: State<MyData>) -> Response<'static> {
 
 #[post("/delete_map_data")]
 fn delete_map_data(data: State<MyData>) -> Response<'static> {
-    let mut d = data.d.lock().unwrap();
+    let mut d = data.d.lock().unwrap_or_else(|e| e.into_inner());
     d.deskovery.clear();
     d.field_map = [0; FIELD_SIZE * FIELD_SIZE];
 
@@ -167,7 +167,7 @@ fn delete_map_data(data: State<MyData>) -> Response<'static> {
 
 #[get("/map")]
 fn get_map(data: State<MyData>) -> Response<'static> {
-    let d = data.d.lock().unwrap();
+    let d = data.d.lock().unwrap_or_else(|e| e.into_inner());
 
 //    let v = vec![
 //        0, 0, 0, 0, 0, 0, 0, 0,
@@ -200,7 +200,7 @@ fn get_map(data: State<MyData>) -> Response<'static> {
 }
 
 fn main() {
-    let mut c = rocket::Config::new(Environment::Development);
+    let mut c = rocket::Config::new(Environment::Staging);
     c.set_keep_alive(0);
     rocket::custom(c)
         .manage(MyData::new())
