@@ -67,7 +67,7 @@ pub struct DeskoveryData {
     pub ps2: bool,
     pub ps3: bool,
     pub ps4: bool,
-    pub dto: u32, // distance to object
+    pub dto: i32, // distance to object
 }
 
 impl FromDataSimple for DeskoveryData {
@@ -126,6 +126,15 @@ fn push(data: State<MyData>, x: String, y: String) {
     }
 }
 
+#[get("/map_data")]
+fn get_map_data(data: State<MyData>) -> Response<'static> {
+    let mut d = data.d.lock().unwrap();
+    Response::build()
+        .header(ContentType::Plain)
+        .sized_body(Cursor::new(serde_json::to_string(&d.deskovery).unwrap()))
+        .finalize()
+}
+
 #[get("/map")]
 fn get_map(data: State<MyData>) -> Response<'static> {
     let mut d = data.d.lock().unwrap();
@@ -152,15 +161,17 @@ fn get_map(data: State<MyData>) -> Response<'static> {
     let mut f = File::open("img.bmp").unwrap();
     f.read(&mut buffer);
 
+    let zz = serde_json::to_string(&d.deskovery).unwrap();
+
     Response::build()
-        .header(ContentType::BMP)
-        .sized_body(Cursor::new(buffer))
+        .header(ContentType::Plain)
+        .sized_body(Cursor::new(zz))
         .finalize()
 }
 
 fn main() {
     rocket::ignite()
         .manage(MyData::new())
-        .mount("/", routes![index, poll, push, get_map])
+        .mount("/", routes![index, poll, push, get_map, get_map_data])
         .launch();
 }
