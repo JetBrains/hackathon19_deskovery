@@ -176,24 +176,27 @@ fn delete_map_data(data: State<MyData>) -> Response<'static> {
         .finalize()
 }
 
+fn draw_square(my_bmp: &mut Image, x: u32, y: u32, color: u8) {
+    let pixel = px!(color, color, color);
+    my_bmp.set_pixel(x, y, pixel);
+    my_bmp.set_pixel(x, y + 1, pixel);
+    my_bmp.set_pixel(x, y - 1, pixel);
+    my_bmp.set_pixel(x + 1, y, pixel);
+    my_bmp.set_pixel(x + 1, y + 1, pixel);
+    my_bmp.set_pixel(x + 1, y - 1, pixel);
+    my_bmp.set_pixel(x - 1, y, pixel);
+    my_bmp.set_pixel(x - 1, y + 1, pixel);
+    my_bmp.set_pixel(x - 1, y - 1, pixel);
+}
+
 #[get("/map")]
 fn get_map(data: State<MyData>) -> Response<'static> {
     let d = data.d.lock().unwrap_or_else(|e| e.into_inner());
 
-//    let v = vec![
-//        0, 0, 0, 0, 0, 0, 0, 0,
-//        0, 0, 0, 0, 0, 0, 0, 0,
-//        0, 0, 255, 255, 255, 0, 0, 0,
-//        0, 0, 255, 255, 255, 0, 0, 0,
-//        0, 0, 255, 255, 255, 0, 0, 0,
-//        0, 0, 255, 255, 255, 0, 0, 0,
-//        0, 0, 0, 0, 0, 0, 0, 0,
-//        0, 0, 0, 0, 0, 0, 0, 0
-//    ];
-
     let mut my_bmp = Image::new(FIELD_SIZE as u32, FIELD_SIZE as u32);
     for (x, y) in my_bmp.coordinates() {
-        my_bmp.set_pixel(x, y, px!(x, y, d.field_map[(x * FIELD_SIZE as u32 + y) as usize]));
+        let color = d.field_map[(x * FIELD_SIZE as u32 + y) as usize];
+        draw_square(&mut my_bmp, x, y, color);
     }
     my_bmp.save("field_map.bmp").unwrap();
 
@@ -201,8 +204,6 @@ fn get_map(data: State<MyData>) -> Response<'static> {
     buffer.resize(FIELD_SIZE * FIELD_SIZE * 4, 0);
     let mut f = File::open("field_map.bmp").unwrap();
     f.read(&mut buffer).unwrap();
-
-//    let zz = serde_json::to_string(&d.deskovery).unwrap();
 
     Response::build()
         .header(ContentType::BMP)
