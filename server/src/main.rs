@@ -15,9 +15,6 @@ use rocket::{Data, State};
 use rocket::{Outcome::*, Request, Response};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
-use std::cmp::{min, max};
-use image::{ImageFormat, ImageBuffer, Rgba, Luma, ConvertBuffer, png, ColorType};
-use image::DynamicImage::ImageLuma8;
 use bmp::{Image, Pixel};
 use std::fs::File;
 
@@ -102,12 +99,15 @@ fn index() -> Response<'static> {
 #[post("/poll", format = "json", data = "<deskovery_data_json>")]
 fn poll(data: State<MyData>, deskovery_data_json: Json<Vec<DeskoveryData>>) -> String {
     let mut d = data.d.lock().unwrap();
+    let descovery_data = &mut d.deskovery;
+
+    if descovery_data.len() >= 1000 {
+        descovery_data.clear();
+    }
+
     let deskovery_data = deskovery_data_json.0;
     println!("RECEIVED: {:?}", deskovery_data);
-    d.deskovery.extend(deskovery_data.into_iter());
-    if d.deskovery.len() > 100 {
-        d.deskovery.clear() // TODO
-    }
+    descovery_data.extend(deskovery_data.into_iter());
 
 //    let field_x = min(max(deskovery_data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
 //    let field_y = min(max(deskovery_data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
@@ -139,7 +139,7 @@ fn push(data: State<MyData>, x: String, y: String, b1: String, b2: String, b3: S
 
 #[get("/map_data")]
 fn get_map_data(data: State<MyData>) -> Response<'static> {
-    let mut d = data.d.lock().unwrap();
+    let d = data.d.lock().unwrap();
     Response::build()
         .header(ContentType::Plain)
         .sized_body(Cursor::new(serde_json::to_string(&d.deskovery).unwrap()))
@@ -160,7 +160,7 @@ fn delete_map_data(data: State<MyData>) -> Response<'static> {
 
 #[get("/map")]
 fn get_map(data: State<MyData>) -> Response<'static> {
-    let mut d = data.d.lock().unwrap();
+    let d = data.d.lock().unwrap();
 
     let v = vec![
         0, 0, 0, 0, 0, 0, 0, 0,
@@ -177,12 +177,12 @@ fn get_map(data: State<MyData>) -> Response<'static> {
     for (x, y) in my_bmp.coordinates() {
         my_bmp.set_pixel(x, y, px!(x, y, v[(x * 8 + y) as usize]));
     }
-    my_bmp.save("img.bmp");
+    my_bmp.save("img.bmp").unwrap();
 
     let mut buffer = vec![];
     buffer.resize(1024, 0);
     let mut f = File::open("img.bmp").unwrap();
-    f.read(&mut buffer);
+    f.read(&mut buffer).unwrap();
 
     let zz = serde_json::to_string(&d.deskovery).unwrap();
 
