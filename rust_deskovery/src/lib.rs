@@ -6,14 +6,20 @@ mod compat;
 #[allow(dead_code)]
 mod generated_images;
 
+use wifi::{Port, PortResult, Device};
+use data::{DeskoveryData, ServerData};
+
+
 use odometry::{OdometryComputer, Position};
 use core::f64::consts::PI;
 use compat::{display_text_xy, debug_print, display_text, PRX_BR, PRX_BL, PRX_FR, PRX_FL, robot_idle};
 use compat::{
     delay_ms, display_bg_control, led_control, left_ticks, prxData, radar_range, right_ticks,
     LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, LCD5110_write_pict, deskovery_motor,
+    uart_output, uart_input,
 };
-use crate::compat::system_ticks; //todo make safe
+use crate::compat::{debug_output, system_ticks};
+use crate::generated_images::RUST_LOGO_BYTES; //todo make safe
 
 fn output_data_line<F>(x: u8, y: u8, label: &str, dataGetter: F)
     where
@@ -53,90 +59,121 @@ fn alarm_char(alarm_idx: u32) -> u8 {
     }
 }
 
-enum DriveMode {
-    Spiral,
-    Leaves,
-}
 
 #[no_mangle]
 pub extern "C" fn rust_main() {
-    let mut brightness: i32 = 0;
-
     let mut odo_computer = OdometryComputer::new();
-    let mut close_to_start_point = true;
-    let mut left_power = 200;
-    let mut right_power = 600;
-    let mut current_iteration = 0;
-    let mut required_iterations_before_change = 0;
-
-    let mut start_x = 0;
-    let mut start_y = 0;
-
-    let drive_mode = DriveMode::Spiral;
-
+    let port = RobotBrains {
+        odo_computer,
+        deskovery_data: [Default::default(); 10],
+        data_q_len: 0,
+        server_data: None,
+        left_motor: 0,
+        right_motor: 0,
+        sample_timestamp: 0,
+    };
+    let mut device = Device::new(port);
     unsafe {
-        delay_ms(1500);
+        display_bg_control(80);
+        LCD5110_write_pict(&RUST_LOGO_BYTES as *const _);
     }
-    loop {
-        robot_idle();
-        unsafe {
-            /*
-                        delay_ms(300);
-                        brightness = (brightness + 10) % 100;
-                        display_bg_control(brightness);
-            */
-            deskovery_motor(left_power, right_power, false);
-            LCD5110_clear();
-
-//            LCD5110_write_pict( &generated_images::RUST_LOGO_BYTES as *const u8);
-//            delay_ms(1000);
-//            LCD5110_write_pict( &generated_images::CLION_LOGO_NORM_BYTES as *const u8);
-//            delay_ms(1000);
-
-            output_data_line(0, 0, "Left: ", || left_power);
-            output_data_line(0, 1, "Right: ", || right_power);
-//            output_data_line(0, 0, "Dist: ", || radar_range());
-//            output_data_line(0, 1, "L: ", || left_ticks());
-//            output_data_line(0, 2, "R: ", || right_ticks());
-//            LCD5110_set_XY(12, 0);
-//            LCD5110_write_char(alarm_char(PRX_BR));
-//            LCD5110_write_char(alarm_char(PRX_BL));
-//            LCD5110_set_XY(12, 1);
-//            LCD5110_write_char(alarm_char(PRX_FR));
-//            LCD5110_write_char(alarm_char(PRX_FL));
-            odo_computer.update(left_ticks(), right_ticks());
-
-            match drive_mode {
-                DriveMode::Spiral => {
-                    if required_iterations_before_change == current_iteration {
-                        left_power += 5;
-                        required_iterations_before_change += 5;
-                    } else {
-                        current_iteration += 1;
-                    }
-                }
-                DriveMode::Leaves => {
-                    if ((odo_computer.position().x as i32 - start_x).pow(2) +
-                        (odo_computer.position().y as i32 - start_y).pow(2)) < 900
-                    {
-                        if !close_to_start_point {
-                            close_to_start_point = true;
-                            start_x = odo_computer.position().x as i32;
-                            start_y = odo_computer.position().y as i32;
-                            left_power = -600;
-                            right_power = -400;
-                        }
-                    } else {
-                        close_to_start_point = false;
-                    }
-                }
-            }
+    unsafe {
+        let mut c: i8 = 0;
+        delay_ms(1500);
+        while uart_input(&mut c, 1) != 0 {
+            debug_output(&(c as u8) as *const u8, 1);
         }
-        let position = odo_computer.position();
-        output_data_line(0, 3, "X: ", || position.x as i32);
-        output_data_line(0, 4, "Y: ", || position.y as i32);
-        output_data_line(0, 5, "T: ", || (position.theta / PI * 180.0) as i32);
+    }
 
-        debug_print("Hello, Deskovery\n\r");
+
+    match device.connect_to_wifi_if_needed() {
+        _ => {}
+    };
+    loop {
+        let arr = device.brains.deskovery_data;
+        unsafe { led_control(true); }
+        device.brains.server_data = device.make_post_request(&arr[0..device.brains.data_q_len],
+//                                                             "185.135.234.139", 8000).ok();
+                                                             "104.236.228.23", 8000).ok();
+        unsafe { led_control(false); }
+        device.brains.data_q_len = 0;
+        device.brains.robot_loop();
     }
 }
+
+
+pub struct RobotBrains {
+    odo_computer: OdometryComputer,
+    deskovery_data: [DeskoveryData; 10],
+    data_q_len: usize,
+    server_data: Option<ServerData>,
+    left_motor: i32,
+    right_motor: i32,
+    sample_timestamp: u32,
+}
+
+impl RobotBrains {
+    pub fn robot_loop(&mut self) {
+        robot_idle();
+        match self.server_data {
+            Some(data) => {
+                //tractor control
+                self.left_motor = -data.x;
+                self.right_motor = -data.y;
+                //auto control
+//                self.left_motor = -data.y / 2 + data.x / 2;
+//                self.right_motor = -data.y / 2 - data.x / 2;
+                unsafe { deskovery_motor(self.left_motor, self.right_motor, false); }
+            }
+            None => {}
+        }
+        unsafe { LCD5110_clear(); }
+        output_data_line(0, 0, "LM: ", || self.left_motor);
+        output_data_line(0, 1, "RM: ", || self.right_motor);
+        unsafe {
+            LCD5110_set_XY(12, 0);
+            LCD5110_write_char(alarm_char(PRX_BR));
+            LCD5110_write_char(alarm_char(PRX_BL));
+            LCD5110_set_XY(12, 1);
+            LCD5110_write_char(alarm_char(PRX_FR));
+            LCD5110_write_char(alarm_char(PRX_FL));
+            self.odo_computer.update(left_ticks(), right_ticks());
+            if (system_ticks() - self.sample_timestamp) >250 {
+                if(self.data_q_len < self.deskovery_data.len()) {
+                    self.deskovery_data[self.data_q_len] = DeskoveryData{
+                        x: self.odo_computer.position().x as i32,
+                        y: self.odo_computer.position().y as i32,
+                        th: (self.odo_computer.position().theta *180.0/PI) as i32,
+                        ps1: prxData.alarms[0],
+                        ps2: prxData.alarms[1],
+                        ps3: prxData.alarms[2],
+                        ps4: prxData.alarms[3],
+                        dto: radar_range()
+                    };
+                    self.data_q_len +=1;
+                }
+                self.sample_timestamp = system_ticks();
+            }
+        }
+    }
+}
+
+impl Port for RobotBrains {
+    fn write(&mut self, message: &[u8]) -> PortResult<()> {
+        unsafe {
+            uart_output(message.as_ptr() as *const i8, message.len() as i32);
+        }
+        Ok(())
+    }
+
+    fn read(&mut self, buf: &mut [u8]) -> PortResult<usize> {
+        let size = unsafe { uart_input(buf.as_mut_ptr() as *mut i8, buf.len() as i32) };
+        if size == 0 {
+            self.robot_loop();
+        } else {
+            unsafe { debug_output(buf.as_ptr(), size as u32); }
+        }
+        Ok(size as usize)
+    }
+}
+

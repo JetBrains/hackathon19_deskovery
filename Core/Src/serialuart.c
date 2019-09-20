@@ -5,7 +5,7 @@
 
 extern UART_HandleTypeDef huart3;
 
-#define BUF_SIZE 200
+#define BUF_SIZE 2000
 
 static volatile char rcvBuff[BUF_SIZE];
 static volatile unsigned int wrIdx;
@@ -31,6 +31,9 @@ __unused int uart_input(char *p, const int maxLen) {
     for (; (rdIdx != wrIdx) && (i < maxLen); i++) {
         p[i] = rcvBuff[rdIdx];
         incIndex(&rdIdx);
+        __enable_irq();
+        __NOP();
+        __disable_irq();
     }
     __enable_irq();
     return i;
@@ -38,11 +41,11 @@ __unused int uart_input(char *p, const int maxLen) {
 
 void wifiIrqHandler() {
     uint8_t b = huart3.Instance->RDR & 0xffu;
-    __HAL_UART_CLEAR_IT(&huart3, UART_CLEAR_OREF | UART_CLEAR_NEF | UART_CLEAR_PEF | UART_CLEAR_FEF);
-    __HAL_UART_CLEAR_FLAG(&huart3, UART_CLEAR_OREF | UART_CLEAR_NEF | UART_CLEAR_PEF | UART_CLEAR_FEF);
     rcvBuff[wrIdx] = b;
     if (incIndex(&wrIdx) == rdIdx) {
         incIndex(&rdIdx);
     }
+    __HAL_UART_CLEAR_IT(&huart3, UART_CLEAR_OREF | UART_CLEAR_NEF | UART_CLEAR_PEF | UART_CLEAR_FEF);
+    __HAL_UART_CLEAR_FLAG(&huart3, UART_CLEAR_OREF | UART_CLEAR_NEF | UART_CLEAR_PEF | UART_CLEAR_FEF);
 }
 
