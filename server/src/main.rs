@@ -33,7 +33,7 @@ impl MyData {
     }
 }
 
-const FIELD_SIZE: usize = 1000;
+const FIELD_SIZE: usize = 500;
 const FIELD_COLOR: u8 = 255;
 
 struct _MyData {
@@ -179,15 +179,12 @@ fn delete_map_data(data: State<MyData>) -> Response<'static> {
 fn draw_square(my_bmp: &mut Image, x: u32, y: u32, color: u8) {
     let pixel = px!(color, color, color);
     my_bmp.set_pixel(x, y, pixel);
-    if x > 1 && x < FIELD_SIZE as u32 - 2 && y > 1 && y < FIELD_SIZE as u32 - 2 {
-        my_bmp.set_pixel(x, y + 1, pixel);
-        my_bmp.set_pixel(x, y - 1, pixel);
-        my_bmp.set_pixel(x + 1, y, pixel);
-        my_bmp.set_pixel(x + 1, y + 1, pixel);
-        my_bmp.set_pixel(x + 1, y - 1, pixel);
-        my_bmp.set_pixel(x - 1, y, pixel);
-        my_bmp.set_pixel(x - 1, y + 1, pixel);
-        my_bmp.set_pixel(x - 1, y - 1, pixel);
+    if color != 0 && x > 20 && x < FIELD_SIZE as u32 - 20 && y > 20 && y < FIELD_SIZE as u32 - 20 {
+        for d_x in -10i32..10 {
+            for d_y in -10i32..10 {
+                my_bmp.set_pixel((x as i32 + d_x) as u32, (y as i32 + d_y) as u32, pixel);
+            }
+        }
     }
 }
 
