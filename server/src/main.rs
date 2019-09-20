@@ -250,9 +250,9 @@ mod test {
         let scale_y = FIELD_SIZE as f64 / (max_y - min_y) as f64;
 
 
-        let mut test_pbm = Image::new(FIELD_SIZE as u32 + 1, FIELD_SIZE as u32 + 1);
-        for i in 0..FIELD_SIZE as u32 + 1 {
-            for j in 0..FIELD_SIZE as u32 + 1 {
+        let mut test_pbm = Image::new(FIELD_SIZE as u32 + 10, FIELD_SIZE as u32 + 10);
+        for i in 0..FIELD_SIZE as u32 + 10 {
+            for j in 0..FIELD_SIZE as u32 + 10 {
                 test_pbm.set_pixel(i, j, Pixel {
                     r: 255,
                     g: 255,
@@ -281,8 +281,8 @@ mod test {
 
         let square_size = 4;
 
-        let square_start_x = center_x as i32 - square_size;
-        let square_start_y = center_y as i32 - square_size;
+//        let square_start_x = center_x as i32 - square_size;
+//        let square_start_y = center_y as i32 - square_size;
 
         if center_x != 0 {
             square_axes.push((center_x - 1, center_y));
