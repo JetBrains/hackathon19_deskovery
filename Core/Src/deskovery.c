@@ -22,7 +22,6 @@ static inline void runMotorChannel(int pwr, GPIO_TypeDef *dirPort, uint16_t dirP
         HAL_GPIO_WritePin(dirPort, dirPin, GPIO_PIN_SET);
         __HAL_TIM_SET_COMPARE(&HMOTOR_TIM, motorChannel, -pwr);
     }
-    HAL_TIM_PWM_Start(&HMOTOR_TIM, motorChannel);
 }
 
 bool deskovery_motor(int pwrLeft, int pwrRight, bool recovery) {
