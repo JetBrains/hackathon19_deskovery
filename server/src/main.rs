@@ -179,14 +179,16 @@ fn delete_map_data(data: State<MyData>) -> Response<'static> {
 fn draw_square(my_bmp: &mut Image, x: u32, y: u32, color: u8) {
     let pixel = px!(color, color, color);
     my_bmp.set_pixel(x, y, pixel);
-    my_bmp.set_pixel(x, y + 1, pixel);
-    my_bmp.set_pixel(x, y - 1, pixel);
-    my_bmp.set_pixel(x + 1, y, pixel);
-    my_bmp.set_pixel(x + 1, y + 1, pixel);
-    my_bmp.set_pixel(x + 1, y - 1, pixel);
-    my_bmp.set_pixel(x - 1, y, pixel);
-    my_bmp.set_pixel(x - 1, y + 1, pixel);
-    my_bmp.set_pixel(x - 1, y - 1, pixel);
+    if x > 1 && x < FIELD_SIZE as u32 - 2 && y > 1 && y < FIELD_SIZE as u32 - 2 {
+        my_bmp.set_pixel(x, y + 1, pixel);
+        my_bmp.set_pixel(x, y - 1, pixel);
+        my_bmp.set_pixel(x + 1, y, pixel);
+        my_bmp.set_pixel(x + 1, y + 1, pixel);
+        my_bmp.set_pixel(x + 1, y - 1, pixel);
+        my_bmp.set_pixel(x - 1, y, pixel);
+        my_bmp.set_pixel(x - 1, y + 1, pixel);
+        my_bmp.set_pixel(x - 1, y - 1, pixel);
+    }
 }
 
 #[get("/map")]
