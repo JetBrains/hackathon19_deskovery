@@ -154,6 +154,16 @@ fn get_map_data(data: State<MyData>) -> Response<'static> {
         .finalize()
 }
 
+#[get("/map_raw")]
+fn get_map_raw(data: State<MyData>) -> Response<'static> {
+    let d = data.d.lock().unwrap_or_else(|e| e.into_inner());
+    let v = d.field_map.to_vec();
+    Response::build()
+        .header(ContentType::Plain)
+        .sized_body(Cursor::new(serde_json::to_string(&v).unwrap()))
+        .finalize()
+}
+
 #[post("/delete_map_data")]
 fn delete_map_data(data: State<MyData>) -> Response<'static> {
     let mut d = data.d.lock().unwrap_or_else(|e| e.into_inner());
@@ -185,11 +195,11 @@ fn get_map(data: State<MyData>) -> Response<'static> {
     for (x, y) in my_bmp.coordinates() {
         my_bmp.set_pixel(x, y, px!(x, y, d.field_map[(x * FIELD_SIZE as u32 + y) as usize]));
     }
-    my_bmp.save("img.bmp").unwrap();
+    my_bmp.save("field_map.bmp").unwrap();
 
     let mut buffer = vec![];
     buffer.resize(FIELD_SIZE * FIELD_SIZE * 4, 0);
-    let mut f = File::open("img.bmp").unwrap();
+    let mut f = File::open("field_map.bmp").unwrap();
     f.read(&mut buffer).unwrap();
 
 //    let zz = serde_json::to_string(&d.deskovery).unwrap();
