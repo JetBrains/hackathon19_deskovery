@@ -8,7 +8,8 @@ use core::str::from_utf8;
 // TODO: add some errors
 pub enum PortError {
     Error,
-    HttpError
+    HttpError,
+    JsonError
 }
 
 pub type PortResult<T> = Result<T, PortError>;
@@ -62,23 +63,27 @@ pub trait Port {
 }
 
 pub struct Device<T : Port> {
-    port: T,
+    pub brains: T,
     buf: [u8; 1024]
 }
 
 impl<T: Port> Device<T> {
     pub fn new(port: T) -> Device<T> {
-        Device { port, buf: [0; 1024] }
+        Device { brains: port, buf: [0; 1024] }
     }
 
     pub fn ip_status(&mut self) -> PortResult<u8> {
-        let size = self.port.command(b"AT+CIPSTATUS", &mut self.buf, &["OK"])?;
+        let size = self.brains.command(b"AT+CIPSTATUS", &mut self.buf, &["OK"])?;
         print_response(&self.buf, size);
 
-        if self.buf.starts_with(b"STATUS:") {
+        let pattern = b"STATUS:";
+        let status_index = index_of(&self.buf, pattern);
+        //let s = from_utf8(&self.buf).unwrap();
+        if let Some(index) = status_index {
+            let status = self.buf[index + pattern.len()] - ('0' as u8);
             #[cfg(feature = "std")]
-            println!("Status: {}", self.buf[7]);
-            Ok(self.buf[7])
+            println!("Status: {}", status);
+            Ok(status)
         } else {
             Err(PortError::Error)
         }
@@ -92,13 +97,13 @@ impl<T: Port> Device<T> {
             _ => {}
         };
 
-        let size = self.port.command(b"AT+CWJAP=\"JetBrains-Guest\",\"wifiusers90\"", &mut self.buf[..], &["OK"])?;
+        let size = self.brains.command(b"AT+CWJAP=\"JetBrains-Guest\",\"wifiusers90\"", &mut self.buf[..], &["OK"])?;
         print_response(&self.buf, size);
         return Ok(());
     }
 
     pub fn close_connection(&mut self) -> PortResult<()> {
-        let size = self.port.command(b"AT+CIPCLOSE", &mut self.buf, &["CLOSED"])?;
+        let size = self.brains.command(b"AT+CIPCLOSE", &mut self.buf, &["CLOSED"])?;
         print_response(&self.buf, size);
         Ok(())
     }
@@ -110,7 +115,7 @@ impl<T: Port> Device<T> {
         let command_size = write_buf.count;
         let command_slice = &command[..command_size];
 
-        let size = self.port.command(command_slice, &mut self.buf, &["OK"])?;
+        let size = self.brains.command(command_slice, &mut self.buf, &["OK"])?;
         print_response(&self.buf, size);
         Ok(())
     }
@@ -148,10 +153,10 @@ impl<T: Port> Device<T> {
         let mut buf = [0; 1024];
 //        TODO: try to invoke convert using dereference quick fix
 //        self.port.read_while(x, )
-        let (total_size, message_size) = self.port.read_while(&mut buf, 0, &["SEND OK"])?;
+        let (total_size, message_size) = self.brains.read_while(&mut buf, 0, &["SEND OK"])?;
         print_response(&buf, message_size);
         let rest_of_buf = &mut buf[message_size..];
-        let (total_size2, message_size2) = self.port.read_while(rest_of_buf, total_size - message_size, &["CLOSED"])?;
+        let (total_size2, message_size2) = self.brains.read_while(rest_of_buf, total_size - message_size, &["CLOSED"])?;
         print_response(&rest_of_buf, message_size + total_size2);
         let str_data = from_utf8(&rest_of_buf[..message_size2]).unwrap();
         let option = str_data.lines().find(|line| line.contains("HTTP") && line.ends_with("OK"));
@@ -161,7 +166,10 @@ impl<T: Port> Device<T> {
         let start_index = str_data.find("{");
         let end_index = str_data.find("}");
         match (start_index, end_index) {
-            (Some(start), Some(end)) => Ok(Self::parse_data(&str_data[start..end + 1])),
+            (Some(start), Some(end)) => {
+                Self::parse_data(&str_data[start..end + 1])
+                    .map_err(|e| PortError::JsonError)
+            },
             _ => {
                 #[cfg(feature = "std")]
                 println!("Failed to find json");
@@ -176,16 +184,16 @@ impl<T: Port> Device<T> {
         write!(write_buf, "AT+CIPSEND={}", data.len());
         let command_size = write_buf.count;
         let command_slice = &command[..command_size];
-        let size = self.port.command(command_slice, &mut self.buf, &[">"])?;
+        let size = self.brains.command(command_slice, &mut self.buf, &[">"])?;
         #[cfg(feature = "std")]
         println!("> {}", from_utf8(command_slice).unwrap());
-        self.port.write(data);
+        self.brains.write(data);
 //        self.port.read_while(&mut command, 0, "SEND OK")?;
         Ok(())
     }
 
-    fn parse_data(data: &str) -> ServerData {
-        serde_json_core::de::from_str(data).unwrap()
+    fn parse_data(data: &str) -> serde_json_core::de::Result<ServerData> {
+        serde_json_core::de::from_str(data)
     }
 }
 

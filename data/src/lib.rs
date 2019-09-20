@@ -1,3 +1,4 @@
+#![no_std]
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Default, Copy, Clone)]
@@ -9,7 +10,7 @@ pub struct DeskoveryData {
     pub ps2: bool,
     pub ps3: bool,
     pub ps4: bool,
-    pub dto: u32,
+    pub dto: i32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -17,9 +18,12 @@ pub enum RequestType {
     Move
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct ServerData {
     pub x: i32,
     pub y: i32,
-//    pub theta: f64,
+    pub b1: bool,
+    pub b2: bool,
+    pub b3: bool,
+    pub b4: bool,
 }
