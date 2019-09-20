@@ -39,7 +39,7 @@ const FIELD_COLOR: u8 = 255;
 struct _MyData {
     controller: ControllerData,
     deskovery: Vec<DeskoveryData>,
-    field_map: [u8; FIELD_SIZE * FIELD_SIZE],
+    field_map: Box<[u8; FIELD_SIZE * FIELD_SIZE]>,
 }
 
 impl _MyData {
@@ -47,7 +47,7 @@ impl _MyData {
         _MyData {
             controller: ControllerData { x: 0, y: 0, b1: false, b2: false, b3: false, b4: false },
             deskovery: vec![],
-            field_map: [0u8; FIELD_SIZE * FIELD_SIZE],
+            field_map: Box::new([0u8; FIELD_SIZE * FIELD_SIZE]),
         }
     }
 }
@@ -168,7 +168,7 @@ fn get_map_raw(data: State<MyData>) -> Response<'static> {
 fn delete_map_data(data: State<MyData>) -> Response<'static> {
     let mut d = data.d.lock().unwrap_or_else(|e| e.into_inner());
     d.deskovery.clear();
-    d.field_map = [0; FIELD_SIZE * FIELD_SIZE];
+    d.field_map = Box::new([0; FIELD_SIZE * FIELD_SIZE]);
 
     Response::build()
         .header(ContentType::Plain)
