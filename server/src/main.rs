@@ -184,7 +184,7 @@ fn get_map(data: State<MyData>) -> Response<'static> {
     my_bmp.save("img.bmp").unwrap();
 
     let mut buffer = vec![];
-    buffer.resize(1024, 0);
+    buffer.resize(FIELD_SIZE * FIELD_SIZE * 4, 0);
     let mut f = File::open("img.bmp").unwrap();
     f.read(&mut buffer).unwrap();
 
