@@ -18,24 +18,36 @@
 
         var lastX = 0.0;
         var lastY = 0.0;
+        var lb1 = false;
+        var lb2 = false;
+        var lb3 = false;
+        var lb4 = false;
 
         setInterval(function () {
             var gamepads = navigator.getGamepads();
             var gp = gamepads[0];
             if (gp) {
                 var axes = gp.axes;
-                var x = axes[0];
-                var y = axes[1];
-                if (x !== lastX || y !== lastY) {
+                var b1 = gp.buttons[0].pressed;
+                var b2 = gp.buttons[1].pressed;
+                var b3 = gp.buttons[2].pressed;
+                var b4 = gp.buttons[3].pressed;
+                var x = axes[1];
+                var y = axes[5];
+                if (x !== lastX || y !== lastY || lb1 != b1 || lb2 != b2 || lb3 != b3 || lb4 != b4) {
                     lastX = x;
                     lastY = y;
+                    lb1 = b1;
+                    lb2 = b2;
+                    lb3 = b3;
+                    lb4 = b4;
                     console.log("x: " + x + "; y: " + y);
-                    fetch("/push?x="+x+"&y="+y).then(function(response) {
+                    fetch("/push?x="+x+"&y="+y+"&b1="+b1+"&b2="+b2+"&b3="+b3+"&b4="+b4).then(function(response) {
                         console.log(response);
                     });
                 }
             }
-        }, 300)
+        }, 50)
     </script>
 </head>
 <body>
