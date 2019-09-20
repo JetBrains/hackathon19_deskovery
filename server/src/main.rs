@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 use bmp::{Image, Pixel};
 use std::fs::File;
 use std::cmp::{min, max};
+use rocket::config::Environment;
 
 
 struct MyData {
@@ -199,7 +200,9 @@ fn get_map(data: State<MyData>) -> Response<'static> {
 }
 
 fn main() {
-    rocket::ignite()
+    let mut c = rocket::Config::new(Environment::Development);
+    c.set_keep_alive(0);
+    rocket::custom(c)
         .manage(MyData::new())
         .mount("/", routes![index, poll, push, get_map, get_map_data, delete_map_data])
         .launch();
