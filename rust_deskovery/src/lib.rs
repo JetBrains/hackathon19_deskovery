@@ -12,7 +12,7 @@ use compat::{
     delay_ms, display_bg_control, led_control, left_ticks, prxData, radar_range, right_ticks,
     LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, LCD5110_write_pict, deskovery_motor,
 };
-use crate::compat::sensor_radar_range; //todo make safe
+use crate::compat::{sensor_radar_range, set_radar_roi}; //todo make safe
 
 pub struct Screen {
     screen: [u8; 504]
@@ -28,8 +28,8 @@ impl Screen {
     }
 
     pub fn pixel(&mut self, x: u32, y: u32) {
-        if x > 84 || y > 48 { return; }
-        let idx = x  + 84*(6- (y / 8));
+        if x >= 84 || y >= 48 { return; }
+        let idx = x + 84 * (5 - (y / 8));
         self.screen[idx as usize] |= [0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1][(y % 8) as usize];
     }
     pub fn draw(&self) {
@@ -82,17 +82,21 @@ pub extern "C" fn rust_main() {
     let mut screen = Screen::new();
     unsafe {
         display_bg_control(99);
-        deskovery_motor(200, 300, false);
+//        deskovery_motor(200, 300, false);
     }
     loop {
-        robot_idle();
         screen.clear();
-        let mut i = sensor_radar_range();
-        if i > 0 {
-            i /= 15;
-            screen.pixel(42, i as u32);
-            screen.pixel(41, i as u32);
+        for i in (0..15) {
+            set_radar_roi(i, 0, i, 15);
+            robot_idle();
+            let mut y = sensor_radar_range();
+            if y > 0 {
+                y /= 15;
+                for j in (0..4) {
+                    screen.pixel(i * 5 + 2 + j, y as u32);
+                }
+            }
+            screen.draw();
         }
-        screen.draw();
     }
 }

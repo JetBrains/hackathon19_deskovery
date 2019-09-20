@@ -151,13 +151,11 @@ __unused void delay_ms(long ms) {
     uint32_t wait = ms;
 
     /* Add a period to guaranty minimum wait */
-    if (wait < HAL_MAX_DELAY)
-    {
-        wait += (uint32_t)(uwTickFreq);
+    if (wait < HAL_MAX_DELAY) {
+        wait += (uint32_t) (uwTickFreq);
     }
 
-    while((HAL_GetTick() - tickstart) < wait)
-    {
+    while ((HAL_GetTick() - tickstart) < wait) {
         idle();
     }
 }
@@ -220,3 +218,11 @@ __unused int radar_range() {
     return rangeData.RangeStatus == 0 ? rangeData.RangeMilliMeter : -1;
 }
 
+__unused bool setRadarMatrix(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2) {
+    VL53L1_UserRoi_t roi;
+    roi.TopLeftX = x1;
+    roi.TopLeftX = x2;
+    roi.TopLeftX = x2;
+    roi.TopLeftX = y2;
+    return VL53L1_SetUserROI(&centerSensor, &roi) == VL53L1_ERROR_NONE;
+}

@@ -50,3 +50,7 @@ pub fn debug_print(s: &str) {
 pub fn robot_idle() { unsafe { idle(); } }
 
 pub fn sensor_radar_range() -> i32 { unsafe { radar_range() } }
+
+pub fn set_radar_roi(x1: u32, y1: u32, x2: u32, y2: u32) -> bool {
+    return unsafe { setRadarMatrix(x1 as u8, y1 as u8, x2 as u8, y2 as u8) };
+}

@@ -146,3 +146,11 @@ extern "C" {
 extern "C" {
     pub fn Error_Handler();
 }
+extern "C" {
+    pub fn setRadarMatrix(
+        x1: crate::compat::libc::c_uchar,
+        y1: crate::compat::libc::c_uchar,
+        x2: crate::compat::libc::c_uchar,
+        y2: crate::compat::libc::c_uchar,
+    ) -> bool;
+}

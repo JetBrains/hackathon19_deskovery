@@ -50,5 +50,6 @@ void Error_Handler(void);
 #define PRX_BL 0
 #define PRX_BR 2
 
+bool setRadarMatrix(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2);
 
 #endif //HACKATHON19_DESKOVERY_RUST_HEADER_H
