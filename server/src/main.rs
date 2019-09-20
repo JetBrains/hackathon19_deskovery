@@ -135,6 +135,18 @@ fn get_map_data(data: State<MyData>) -> Response<'static> {
         .finalize()
 }
 
+#[post("/delete_map_data")]
+fn delete_map_data(data: State<MyData>) -> Response<'static> {
+    let mut d = data.d.lock().unwrap();
+    d.deskovery.clear();
+    d.field_map = [0; FIELD_SIZE * FIELD_SIZE];
+
+    Response::build()
+        .header(ContentType::Plain)
+        .sized_body(Cursor::new("Cleaned"))
+        .finalize()
+}
+
 #[get("/map")]
 fn get_map(data: State<MyData>) -> Response<'static> {
     let mut d = data.d.lock().unwrap();
@@ -172,6 +184,6 @@ fn get_map(data: State<MyData>) -> Response<'static> {
 fn main() {
     rocket::ignite()
         .manage(MyData::new())
-        .mount("/", routes![index, poll, push, get_map, get_map_data])
+        .mount("/", routes![index, poll, push, get_map, get_map_data, delete_map_data])
         .launch();
 }
