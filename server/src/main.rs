@@ -115,9 +115,10 @@ fn poll(data: State<MyData>, deskovery_data_json: Json<Vec<DeskoveryData>>) -> S
     descovery_data.extend(deskovery_data.clone().into_iter());
 
     for data in &deskovery_data {
-        let field_x = min(max(data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
-        let field_y = min(max(data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32) as usize;
-        d.field_map[field_x * FIELD_SIZE + field_y] = FIELD_COLOR;
+        let field_x = min(max(data.x + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32 - 1) as usize;
+        let field_y = min(max(data.y + FIELD_SIZE as i32 / 2, 0), FIELD_SIZE as i32 - 1) as usize;
+        let index = min(field_x * FIELD_SIZE + field_y, d.field_map.len() - 1);
+        d.field_map[index] = FIELD_COLOR;
     }
 
     let out = serde_json::to_string(&d.controller).unwrap();
@@ -253,10 +254,10 @@ mod test {
         let scale_y = FIELD_SIZE as f64 / (max_y - min_y) as f64;
 
 
-        let mut test_pbm = Image::new(FIELD_SIZE as u32 + 10, FIELD_SIZE as u32 + 10);
+        let mut test_bmp = Image::new(FIELD_SIZE as u32 + 10, FIELD_SIZE as u32 + 10);
         for i in 0..FIELD_SIZE as u32 + 10 {
             for j in 0..FIELD_SIZE as u32 + 10 {
-                test_pbm.set_pixel(i, j, Pixel {
+                test_bmp.set_pixel(i, j, Pixel {
                     r: 255,
                     g: 255,
                     b: 255,
@@ -264,14 +265,40 @@ mod test {
             }
         }
 
+        let mut prev_x: Option<u32> = None;
+        let mut prev_y: Option<u32> = None;
+
         deskovery_data.iter().for_each(|DeskoveryData { x, y, .. }| {
             let image_x = ((x - min_x) as f64 * scale_x) as u32;
             let image_y = ((y - min_y) as f64 * scale_y) as u32;
             dbg!(image_x, image_y, "====");
-            draw_square(&mut test_pbm, image_x, image_y);
+            draw_square(&mut test_bmp, image_x, image_y);
+
+            // Bresenham's algorithm
+            if prev_x.is_some() && prev_y.is_some() {
+                let prev_x = prev_x.unwrap();
+                let prev_y = prev_y.unwrap();
+                let delta_x: i32 = image_x as i32 - prev_x as i32;
+                let delta_y: i32 = image_y as i32 - prev_y as i32;
+                let delta_err = (delta_x as f64 / delta_y as f64).abs();
+
+                let mut error = 0.0; // No error at start
+                let mut y: u32 = prev_y;
+                for x in prev_x..image_x {
+                    draw_square(&mut test_bmp, x, y);
+                    error = error + delta_err;
+                    if error >= 0.5 {
+                        y = (y as i32 + delta_y.signum()) as u32;
+                        error = error - 1.0
+                    }
+                }
+            }
+
+            prev_x = Some(image_x);
+            prev_y = Some(image_y);
         });
 
-        test_pbm.save("test.pbm").unwrap();
+        test_bmp.save("test.bmp").unwrap();
     }
 
     fn draw_square(image: &mut Image, center_x: u32, center_y: u32) {
