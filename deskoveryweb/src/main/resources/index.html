@@ -55,11 +55,14 @@
                 bounds.ctx.lineTo(x, y)
             }
             if (i === mapArray.length - 1) {
+                bounds.ctx.stroke();
+                bounds.ctx.beginPath();
+                bounds.ctx.strokeStyle = "#00FF00"
                 bounds.ctx.arc(x, y, 20, 0, Math.PI * 2);
+                bounds.ctx.stroke();
             }
 
         }
-        bounds.ctx.stroke();
     }
 
     function drawDirections(bounds, mapArray) {
@@ -121,9 +124,9 @@
         const bounds = {
             ctx: ctx,
             canvas: ctx.canvas,
-            width: (maxX - minX) * 1.2,
+            width: Math.max(100, (maxX - minX)) * 1.2,
             left: minX - (maxX - minX) / 10,
-            height: (maxY - minY) * 1.2,
+            height:Math.max(100,  (maxY - minY)) * 1.2,
             top: maxY + (maxY - minY) / 10,
             screenX: function (x) {
                 return this.canvas.width * (x - this.left) / this.width;
