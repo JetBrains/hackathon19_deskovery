@@ -95,7 +95,7 @@ pub extern "C" fn rust_main() {
         unsafe { led_control(true); }
         device.brains.server_data = device.make_post_request(&arr[0..device.brains.data_q_len],
 //                                                             "185.135.234.139", 8000).ok();
-                                                             "104.236.228.23", 8000).ok();
+                                                             "192.168.0.101", 8000).ok();
         unsafe { led_control(false); }
         device.brains.data_q_len = 0;
         device.brains.robot_loop();
