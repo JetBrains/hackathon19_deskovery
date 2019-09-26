@@ -97,7 +97,7 @@ impl<T: Port> Device<T> {
             _ => {}
         };
 
-        let size = self.brains.command(b"AT+CWJAP=\"JetBrains-Guest\",\"wifiusers90\"", &mut self.buf[..], &["OK"])?;
+        let size = self.brains.command(b"AT+CWJAP=\"ELM NET\",\"tetkarumpumpel\"", &mut self.buf[..], &["OK"])?;
         print_response(&self.buf, size);
         return Ok(());
     }
@@ -137,7 +137,7 @@ impl<T: Port> Device<T> {
         let mut write_buf = WriteBuf::new(&mut command);
 
 
-        write!(write_buf, "POST /poll HTTP/1.1\nContent-Type: application/json\nContent-Length: {}\n\n{}\n", data_str.len(), data_str.as_str());
+        write!(write_buf, "POST /poll HTTP/1.1\r\nContent-Type: application/json\r\nConnection:close\r\nContent-Length: {}\r\n\r\n{}", data_str.len(), data_str.as_str());
         let command_size = write_buf.count;
         let command_slice = &command[..command_size];
         // Send data
