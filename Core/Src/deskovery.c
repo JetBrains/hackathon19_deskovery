@@ -3,7 +3,6 @@
 //
 #include "main.h"
 
-extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef HMOTOR_TIM;
 extern TIM_HandleTypeDef EL_TIM;
 extern TIM_HandleTypeDef ER_TIM;
@@ -87,7 +86,7 @@ void deskoveryInit(void) {
     HAL_TIM_Encoder_Start(&EL_TIM, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&ER_TIM, TIM_CHANNEL_ALL);
     setupSensor(&centerSensor);
-    LCD5110_init();
+    ILI9341_Init();
     setupWifi();
 }
 
@@ -162,13 +161,7 @@ __unused void delay_ms(long ms) {
 }
 
 __unused void display_bg_control(int brightness) {
-    if (brightness < 0) {
-        brightness = 0;
-    } else if (brightness > 99) {
-        brightness = 99;
-    }
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 99 - brightness);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    //todo
 }
 
 __unused unsigned long system_ticks() {

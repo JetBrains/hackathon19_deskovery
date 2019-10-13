@@ -3,6 +3,31 @@
 pub const true_: u32 = 1;
 pub const false_: u32 = 0;
 pub const __bool_true_false_are_defined: u32 = 1;
+pub const BLACK: u32 = 0;
+pub const NAVY: u32 = 15;
+pub const DARKGREEN: u32 = 992;
+pub const DARKCYAN: u32 = 1007;
+pub const MAROON: u32 = 30720;
+pub const PURPLE: u32 = 30735;
+pub const OLIVE: u32 = 31712;
+pub const LIGHTGREY: u32 = 50712;
+pub const DARKGREY: u32 = 31727;
+pub const BLUE: u32 = 31;
+pub const GREEN: u32 = 2016;
+pub const CYAN: u32 = 2047;
+pub const RED: u32 = 63488;
+pub const MAGENTA: u32 = 63519;
+pub const YELLOW: u32 = 65504;
+pub const WHITE: u32 = 65535;
+pub const ORANGE: u32 = 64800;
+pub const GREENYELLOW: u32 = 45029;
+pub const PINK: u32 = 63519;
+pub const SCREEN_VERTICAL_1: u32 = 0;
+pub const SCREEN_HORIZONTAL_1: u32 = 1;
+pub const SCREEN_VERTICAL_2: u32 = 2;
+pub const SCREEN_HORIZONTAL_2: u32 = 3;
+pub const HORIZONTAL_IMAGE: u32 = 0;
+pub const VERTICAL_IMAGE: u32 = 1;
 pub const PRX_FL: u32 = 3;
 pub const PRX_FR: u32 = 1;
 pub const PRX_BL: u32 = 0;
@@ -108,22 +133,127 @@ extern "C" {
     pub fn display_bg_control(brightness: crate::compat::libc::c_int);
 }
 extern "C" {
-    pub fn LCD5110_write_char(c: crate::compat::libc::c_uchar);
+    pub fn ILI9341_Fill_Screen(Colour: crate::compat::libc::c_ushort);
 }
 extern "C" {
-    pub fn LCD5110_clear();
+    pub fn ILI9341_Draw_Colour(Colour: crate::compat::libc::c_ushort);
 }
 extern "C" {
-    pub fn LCD5110_set_XY(X: crate::compat::libc::c_uchar, Y: crate::compat::libc::c_uchar);
-}
-extern "C" {
-    pub fn LCD5110_write_bytes(
-        s: *const crate::compat::libc::c_uchar,
-        len: crate::compat::libc::c_uint,
+    pub fn ILI9341_Draw_Pixel(
+        X: crate::compat::libc::c_ushort,
+        Y: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
     );
 }
 extern "C" {
-    pub fn LCD5110_write_pict(p: *const crate::compat::libc::c_uchar);
+    pub fn ILI9341_Draw_Colour_Burst(
+        Colour: crate::compat::libc::c_ushort,
+        Size: crate::compat::libc::c_ulong,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Rectangle(
+        X: crate::compat::libc::c_ushort,
+        Y: crate::compat::libc::c_ushort,
+        Width: crate::compat::libc::c_ushort,
+        Height: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Horizontal_Line(
+        X: crate::compat::libc::c_ushort,
+        Y: crate::compat::libc::c_ushort,
+        Width: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Vertical_Line(
+        X: crate::compat::libc::c_ushort,
+        Y: crate::compat::libc::c_ushort,
+        Height: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Hollow_Circle(
+        X: crate::compat::libc::c_ushort,
+        Y: crate::compat::libc::c_ushort,
+        Radius: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Filled_Circle(
+        X: crate::compat::libc::c_ushort,
+        Y: crate::compat::libc::c_ushort,
+        Radius: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Hollow_Rectangle_Coord(
+        X0: crate::compat::libc::c_ushort,
+        Y0: crate::compat::libc::c_ushort,
+        X1: crate::compat::libc::c_ushort,
+        Y1: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Filled_Rectangle_Coord(
+        X0: crate::compat::libc::c_ushort,
+        Y0: crate::compat::libc::c_ushort,
+        X1: crate::compat::libc::c_ushort,
+        Y1: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Char(
+        Character: crate::compat::libc::c_char,
+        X: crate::compat::libc::c_uchar,
+        Y: crate::compat::libc::c_uchar,
+        Colour: crate::compat::libc::c_ushort,
+        Size: crate::compat::libc::c_ushort,
+        Background_Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Text_Len(
+        Text: *const crate::compat::libc::c_char,
+        len: crate::compat::libc::c_uchar,
+        X: crate::compat::libc::c_uchar,
+        Y: crate::compat::libc::c_uchar,
+        Colour: crate::compat::libc::c_ushort,
+        Size: crate::compat::libc::c_ushort,
+        Background_Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub fn ILI9341_Draw_Filled_Rectangle_Size_Text(
+        X0: crate::compat::libc::c_ushort,
+        Y0: crate::compat::libc::c_ushort,
+        Size_X: crate::compat::libc::c_ushort,
+        Size_Y: crate::compat::libc::c_ushort,
+        Colour: crate::compat::libc::c_ushort,
+    );
+}
+extern "C" {
+    pub static mut ferris: [crate::compat::libc::c_char; 153600usize];
+}
+extern "C" {
+    pub static mut jb_logo: [crate::compat::libc::c_char; 153600usize];
+}
+extern "C" {
+    pub static mut cl_logo: [crate::compat::libc::c_char; 153600usize];
+}
+extern "C" {
+    pub fn ILI9341_Draw_Image(
+        Image_Array: *const crate::compat::libc::c_char,
+        Orientation: crate::compat::libc::c_uchar,
+    );
 }
 extern "C" {
     pub fn delay_ms(ms: crate::compat::libc::c_long);
