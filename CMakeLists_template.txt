@@ -36,7 +36,7 @@ add_definitions(${defines})
 file(GLOB_RECURSE SOURCES ${sources})
 file(GLOB_RECURSE VL53L1_SOURCES "vl53l1x/*.*")
 
-include_directories(${includes} vl53l1x)
+include_directories(${includes} Drivers/vl53l1x Drivers/ILI9341)
 
 #Rust part start
 SET(RUST_TARGET_ARCH thumbv7em-none-eabihf)

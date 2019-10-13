@@ -4,24 +4,21 @@
 
 mod compat;
 #[allow(dead_code)]
-mod generated_images;
-
 use wifi::{Port, PortResult, Device};
 use data::{DeskoveryData, ServerData};
 
 
 use odometry::OdometryComputer;
 use core::f64::consts::PI;
-use compat::{display_text_xy, display_text, PRX_BR, PRX_BL, PRX_FR, PRX_FL, robot_idle};
+use compat::{display_text_xy, PRX_BR, PRX_BL, PRX_FR, PRX_FL, robot_idle};
 use compat::{
     delay_ms, display_bg_control, led_control, left_ticks, prxData, radar_range, right_ticks,
-    LCD5110_clear, LCD5110_set_XY, LCD5110_write_char, LCD5110_write_pict, deskovery_motor,
-    uart_output, uart_input,
-};
-use crate::compat::{debug_output, system_ticks};
-use crate::generated_images::{RUST_LOGO_BYTES, CLION_LOGO_NORM_BYTES, CLION_LOGO_BYTES}; //todo make safe
+    ILI9341_Fill_Screen, ILI9341_Draw_Char, ILI9341_Draw_Image, deskovery_motor,
+    uart_output, uart_input, WHITE, BLACK, debug_output, system_ticks, SCREEN_HORIZONTAL_2,
+    ferris, jb_logo, cl_logo};
+use crate::compat::{ILI9341_Draw_Filled_Circle, ILI9341_Draw_Hollow_Circle, ILI9341_Draw_Filled_Rectangle_Coord};  //todo make safe
 
-fn output_data_line<F>(x: u8, y: u8, label: &str, dataGetter: F)
+fn output_data_line<F>(x: u16, y: u16, label: &str, dataGetter: F)
     where
         F: FnOnce() -> i32,
 {
@@ -46,15 +43,25 @@ fn output_data_line<F>(x: u8, y: u8, label: &str, dataGetter: F)
         buf[index] = '-' as u8;
     }
 
-    display_text(core::str::from_utf8(&buf[index..]).unwrap());
+    display_text_xy((label.len() * 5) as u16, y as u16, core::str::from_utf8(&buf[index..]).unwrap());
 }
 
-fn alarm_char(alarm_idx: u32) -> u8 {
+fn alarm_color(alarm_idx: u32) -> u16 {
     unsafe {
         if prxData.alarms[alarm_idx as usize] {
-            'A' as u8
+            0xF800//RED
         } else {
-            '.' as u8
+            0xAFE5 //Green-Yellow
+        }
+    }
+}
+
+fn alarm_char(alarm_idx: u32) -> i8 {
+    unsafe {
+        if prxData.alarms[alarm_idx as usize] {
+            'A' as i8
+        } else {
+            '.' as i8
         }
     }
 }
@@ -72,11 +79,13 @@ pub extern "C" fn rust_main() {
         right_motor: 0,
         sample_timestamp: 0,
         screen_draw: RobotBrains::data_screen_draw,
+        screen_changed: true
     };
     let mut device = Device::new(port);
     unsafe {
         display_bg_control(80);
-        LCD5110_write_pict(&RUST_LOGO_BYTES as *const _);
+        ILI9341_Draw_Image(jb_logo.as_ptr(), SCREEN_HORIZONTAL_2 as u8);
+//        ILI9341_Draw_Image(cl_logo.as_ptr(),SCREEN_HORIZONTAL_2 as u8);
     }
     unsafe {
         let mut c: i8 = 0;
@@ -116,7 +125,8 @@ pub struct RobotBrains {
     left_motor: i32,
     right_motor: i32,
     sample_timestamp: u32,
-    screen_draw: fn(&Self),
+    screen_draw: fn(&Self, bool),
+    screen_changed: bool,
 }
 
 impl RobotBrains {
@@ -131,6 +141,7 @@ impl RobotBrains {
 //                self.left_motor = -data.y / 2 + data.x / 2;
 //                self.right_motor = -data.y / 2 - data.x / 2;
                 unsafe { deskovery_motor(self.left_motor, self.right_motor, false); }
+                let newScreen = self.screen_draw;
                 if data.b1 {
                     self.screen_draw = Self::data_screen_draw;
                 } else if data.b2 {
@@ -138,7 +149,11 @@ impl RobotBrains {
                 } else if data.b3 {
                     self.screen_draw = Self::rust_screen_draw;
                 } else if data.b4 {
-                    self.screen_draw = Self::clion_neg_screen_draw;
+                    self.screen_draw = Self::jb_screen_draw;
+                }
+                if &self.screen_draw != &newScreen {
+                    self.screen_changed = true;
+                    self.screen_draw = newScreen;
                 }
             }
             None => {}
@@ -164,32 +179,46 @@ impl RobotBrains {
             }
         }
     }
-    pub fn rust_screen_draw(&self) {
-        unsafe {
-            LCD5110_write_pict(RUST_LOGO_BYTES.as_ptr());
+    pub fn jb_screen_draw(&self, firstDraw: bool) {
+        if firstDraw {
+            unsafe {
+                ILI9341_Draw_Image(jb_logo.as_ptr(), SCREEN_HORIZONTAL_2 as u8);
+            }
         }
     }
-    pub fn clion_screen_draw(&self) {
-        unsafe {
-            LCD5110_write_pict(CLION_LOGO_NORM_BYTES.as_ptr());
+    pub fn rust_screen_draw(&self, firstDraw: bool) {
+        if firstDraw {
+            //        unsafe {
+//            ILI9341_Draw_Image(ferris.as_ptr(), SCREEN_HORIZONTAL_2 as u8);
+//        }
+            self.jb_screen_draw(firstDraw);
         }
     }
-    pub fn clion_neg_screen_draw(&self) {
-        unsafe {
-            LCD5110_write_pict(CLION_LOGO_BYTES.as_ptr());
+    pub fn clion_screen_draw(&self, firstDraw: bool) {
+        if firstDraw {
+
+//        unsafe {
+//            ILI9341_Draw_Image(cl_logo.as_ptr(), SCREEN_HORIZONTAL_2 as u8);
+//        }
         }
+        self.jb_screen_draw(firstDraw);
     }
-    pub fn data_screen_draw(&self) {
+    pub fn data_screen_draw(&self, firstDraw: bool) {
         unsafe {
-            LCD5110_clear();
+            if firstDraw {
+                ILI9341_Fill_Screen(WHITE as u16);
+                ILI9341_Draw_Filled_Circle(260, 180, 60, 0xFFE0);
+                ILI9341_Draw_Hollow_Circle(260, 180, 60, 0);
+            }
+            //todo clear text under
             output_data_line(0, 0, "LM: ", || self.left_motor);
             output_data_line(0, 1, "RM: ", || self.right_motor);
-            LCD5110_set_XY(12, 0);
-            LCD5110_write_char(alarm_char(PRX_BR));
-            LCD5110_write_char(alarm_char(PRX_BL));
-            LCD5110_set_XY(12, 1);
-            LCD5110_write_char(alarm_char(PRX_FR));
-            LCD5110_write_char(alarm_char(PRX_FL));
+            output_data_line(0, 2, "RDR: ", || radar_range());
+
+            ILI9341_Draw_Filled_Rectangle_Coord(220, 140, 240, 160, alarm_color(PRX_BR));
+            ILI9341_Draw_Filled_Rectangle_Coord(280, 140, 300, 160, alarm_color(PRX_BL));
+            ILI9341_Draw_Filled_Rectangle_Coord(220, 200, 240, 220, alarm_color(PRX_FR));
+            ILI9341_Draw_Filled_Rectangle_Coord(280, 200, 300, 220, alarm_color(PRX_FL));
         }
     }
 }

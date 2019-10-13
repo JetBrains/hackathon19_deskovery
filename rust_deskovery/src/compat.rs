@@ -7,6 +7,7 @@ pub mod libc {
     pub type c_uint = u32;
     pub type c_long = i32;
     pub type c_ulong = u32;
+    pub type c_ushort = u16;
     pub type c_uchar = u8;
     pub type c_char = i8;
     //    pub type c_double = f64;
@@ -27,18 +28,12 @@ fn panic(_info: &PanicInfo) -> ! {
     }
 }
 
-pub fn display_text(s: &str) {
+pub fn display_text_xy(x: u16, y: u16, s: &str) {
     unsafe {
+        let size = 4;
         let bytes = s.as_bytes();
-        LCD5110_write_bytes(bytes.as_ptr() as *const u8, bytes.len() as u32);
+        ILI9341_Draw_Text_Len(bytes.as_ptr() as *const i8, s.len() as u8 ,x as u8 * size, y as u8 * 8 * size, BLACK as u16, size as u16, WHITE as u16);
     }
-}
-
-pub fn display_text_xy(x: u8, y: u8, s: &str) {
-    unsafe {
-        LCD5110_set_XY(x, y);
-    }
-    display_text(s);
 }
 
 pub fn debug_print(s: &str) {
