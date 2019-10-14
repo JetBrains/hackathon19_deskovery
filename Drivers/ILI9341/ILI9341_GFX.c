@@ -47,7 +47,7 @@
 #include "ILI9341_STM32_Driver.h"
 #include "ILI9341_GFX.h"
 #include <string.h>
-#include "5x5_font.h"
+#include "8x6_font.h"
 #include "spi.h"
 
 /*Draw hollow circle at X,Y location with specified radius and colour. X and Y represent circles center */

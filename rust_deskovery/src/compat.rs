@@ -28,11 +28,11 @@ fn panic(_info: &PanicInfo) -> ! {
     }
 }
 
-pub fn display_text_xy(x: u16, y: u16, s: &str) {
+pub fn display_text_xy(x: u16, y: u16, s: &str, color: u16, bg_color: u16) {
     unsafe {
         let size = 4;
         let bytes = s.as_bytes();
-        ILI9341_Draw_Text_Len(bytes.as_ptr() as *const i8, s.len() as u8 ,x as u8 * size, y as u8 * 8 * size, BLACK as u16, size as u16, WHITE as u16);
+        ILI9341_Draw_Text_Len(bytes.as_ptr() as *const i8, s.len() as u8 ,x as u8 * size, y as u8 * 8 * size, color, size as u16, bg_color);
     }
 }
 
@@ -43,3 +43,9 @@ pub fn debug_print(s: &str) {
 }
 
 pub fn robot_idle() { unsafe { idle(); } }
+
+pub fn draw_image(bytes: *const i8) {
+    unsafe {
+        ILI9341_Draw_Image(bytes, SCREEN_HORIZONTAL_2 as u8);
+    }
+}

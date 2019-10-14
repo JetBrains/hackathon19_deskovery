@@ -2,6 +2,7 @@
 // Created by Ilia.Motornyi on 26/08/2019.
 //
 #include "main.h"
+#include "ILI9341_STM32_Driver.h"
 
 extern TIM_HandleTypeDef HMOTOR_TIM;
 extern TIM_HandleTypeDef EL_TIM;

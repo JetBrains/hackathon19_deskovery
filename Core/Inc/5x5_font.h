@@ -1,10 +1,10 @@
 #ifndef BASIC_5X5_FONT_H
 #define BASIC_5X5_FONT_H
 
-#define CHAR_WIDTH 6
-#define CHAR_HEIGHT 8
+//#define CHAR_WIDTH 6
+//#define CHAR_HEIGHT 8
 
-static const unsigned char font[96][6] = {
+static const unsigned char _font[96][6] = {
 	{0x00,0x00,0x00,0x00,0x00,0x00}, //  
 	{0x5c,0x00,0x00,0x00,0x00,0x00}, // !
 	{0x06,0x00,0x06,0x00,0x00,0x00}, // "
