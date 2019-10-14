@@ -1,7 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use data::{ServerData, DeskoveryData};
-use core::cmp::min;
 use core::fmt::{Write, Error};
 use core::str::from_utf8;
 

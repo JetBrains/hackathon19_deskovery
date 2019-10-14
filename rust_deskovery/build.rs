@@ -4,7 +4,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 fn generate_rust_bindings(out_path: PathBuf) {
-    let result_path = out_path.join("descovery_bindings.rs");
+    let result_path = out_path.join("\
+    descovery_bindings.rs");
 
     let includes = [
         "/usr/local/lib/gcc/arm-none-eabi/7.3.1/include",

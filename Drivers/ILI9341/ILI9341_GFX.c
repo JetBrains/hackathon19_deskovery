@@ -203,7 +203,7 @@ void ILI9341_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 /*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
 void
-ILI9341_Draw_Text(const char *Text, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour) {
+ILI9341_Draw_Text(const char *Text, uint16_t X, uint16_t Y, uint16_t Colour, uint8_t Size, uint16_t Background_Colour) {
     ILI9341_Draw_Text_Len(Text, strlen(Text), X, Y, Colour, Size, Background_Colour);
 }
 
@@ -291,14 +291,14 @@ static uint16_t textDataChunk(void *paramBlock, const unsigned char **chunkAddre
 
 /*Draws a character (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
-void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
+void ILI9341_Draw_Char(char Character, uint16_t X, uint16_t Y, uint16_t Colour, uint8_t Size,
                        uint16_t Background_Colour) {
     ILI9341_Draw_Text_Len(&Character, 1, X, Y, Colour, Size, Background_Colour);
 }
 
 /*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
-void ILI9341_Draw_Text_Len(const char *Text, uint8_t Len, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
+void ILI9341_Draw_Text_Len(const char *Text, uint8_t Len, uint16_t X, uint16_t Y, uint16_t Colour, uint8_t Size,
                            uint16_t Background_Colour) {
     int lenLimit = (LCD_WIDTH - X) / (CHAR_WIDTH * Size);
     if (lenLimit < Len) {

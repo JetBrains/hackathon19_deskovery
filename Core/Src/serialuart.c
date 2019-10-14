@@ -21,11 +21,11 @@ void setupWifi() {
     __HAL_UART_ENABLE_IT(&huart3, UART_IT_ERR);
 }
 
-__unused void uart_output(const char *p, const int len) {
+__unused void uart_output(const unsigned char *p, const unsigned int len) {
     HAL_UART_Transmit(&huart3, (uint8_t *) p, len, 1000);
 }
 
-__unused int uart_input(char *p, const int maxLen) {
+__unused int uart_input(unsigned char *p, const unsigned int maxLen) {
     __disable_irq();
     int i = 0;
     for (; (rdIdx != wrIdx) && (i < maxLen); i++) {

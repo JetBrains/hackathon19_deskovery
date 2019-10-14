@@ -65,16 +65,16 @@ void measureAll(void);
 void measureAll() {
     char buf[100];
 
-    snprintf(buf, sizeof(buf),"L Enc: %07ld", left_ticks());
+    snprintf(buf, sizeof(buf), "L Enc: %07ld", delegate_left_ticks());
     ILI9341_Draw_Text(buf, 0, 5, BLACK, 1, WHITE);
 
-    snprintf(buf, sizeof(buf),"R Enc: %07ld", right_ticks());
+    snprintf(buf, sizeof(buf), "R Enc: %07ld", delegate_right_ticks());
     ILI9341_Draw_Text(buf, 0, 12, BLACK, 1, WHITE);
 
-    ILI9341_Draw_Char(prxData.alarms[PRX_BR] ?'A':'.', 3, 3, BLACK, 1, WHITE);
-    ILI9341_Draw_Char(prxData.alarms[PRX_BL] ?'A':'.', 4, 3, BLACK, 1, WHITE);
-    ILI9341_Draw_Char(prxData.alarms[PRX_FR] ?'A':'.', 3, 4, BLACK, 1, WHITE);
-    ILI9341_Draw_Char(prxData.alarms[PRX_FL] ?'A':'.', 4, 4, BLACK, 1, WHITE);
+    ILI9341_Draw_Char(prxData.alarms[PRX_BR] ? 'A' : '.', 3 * 6, 3 * 8, BLACK, 1, WHITE);
+    ILI9341_Draw_Char(prxData.alarms[PRX_BL] ? 'A' : '.', 4 * 6, 3 * 8, BLACK, 1, WHITE);
+    ILI9341_Draw_Char(prxData.alarms[PRX_FR] ? 'A' : '.', 3 * 6, 4 * 8, BLACK, 1, WHITE);
+    ILI9341_Draw_Char(prxData.alarms[PRX_FL] ? 'A' : '.', 4 * 6, 4 * 8, BLACK, 1, WHITE);
 
 }
 
