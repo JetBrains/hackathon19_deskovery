@@ -10,23 +10,26 @@ use data::{DeskoveryData, ServerData};
 
 use odometry::OdometryComputer;
 use core::f64::consts::PI;
-use compat::{display_text_xy, PRX_BR, PRX_BL, PRX_FR, PRX_FL, robot_idle};
+use compat::{display_text_xy, PRX_BR, PRX_BL, PRX_FR, PRX_FL, idle};
 use compat::{
     delay_ms, display_bg_control, led_control, left_ticks, prxData, radar_range, right_ticks,
-    ILI9341_Fill_Screen, draw_image, deskovery_motor,
-    uart_output, uart_input, WHITE, BLACK, debug_output, system_ticks, ferris, jb_logo, cl_logo};
-use crate::compat::{ILI9341_Draw_Filled_Circle, ILI9341_Draw_Hollow_Circle, ILI9341_Draw_Filled_Rectangle_Coord, ILI9341_Draw_Image, SCREEN_HORIZONTAL_2};  //todo make safe
+    fill_screen, draw_image, deskovery_motor,
+    uart_output, uart_input, WHITE, debug_output, system_ticks, ferris, jb_logo, cl_logo,
+    draw_filled_circle, draw_hollow_circle, draw_filled_rectangle_coord, DARKGREEN, DARKCYAN, LIGHTGREY, RED, NAVY, BLUE};
 
-fn output_data_line<F>(x: u16, y: u16, label: &str, dataGetter: F, dataLen: usize)
+fn output_data_line<F>(x: u16, y: u16, label: &str, dataGetter: F, dataLen: usize, color: u16, bg_color: u16, size: u8)
     where
         F: FnOnce() -> i32,
 {
-    display_text_xy(x, y, label, BLACK as u16, WHITE as u16);
+    display_text_xy(x, y, label, color, bg_color, size);
+    output_value(x + label.len() as u16 * 6 * size as u16 /*todo constant font width*/, y, dataGetter, dataLen, color, bg_color, size);
+}
+
+fn output_value<F>(x: u16, y: u16, dataGetter: F, dataLen: usize, color: u16, bg_color: u16, size: u8) where F: FnOnce() -> i32 {
     let mut buf: [u8; 20] = [0; 20];
     let strCenter = buf.len() / 2;
     let mut index = strCenter;
     let mut val = dataGetter();
-
     let sign = val < 0;
     if sign {
         val = -val;
@@ -46,8 +49,7 @@ fn output_data_line<F>(x: u16, y: u16, label: &str, dataGetter: F, dataLen: usiz
     for i in strCenter..(index + dataLen) {
         buf[i] = 32;
     }
-
-    display_text_xy((label.len() * 6) as u16, y as u16, core::str::from_utf8(&buf[index..(index + dataLen)]).unwrap(), BLACK as u16, WHITE as u16);
+    display_text_xy(x, y, core::str::from_utf8(&buf[index..(index + dataLen)]).unwrap(), color, bg_color, size);
 }
 
 fn alarm_color(alarm_idx: u32) -> u16 {
@@ -75,30 +77,30 @@ pub extern "C" fn rust_main() {
         screen_draw: RobotBrains::data_screen_draw,
     };
     let mut device = Device::new(port);
+    display_bg_control(80);
     unsafe {
-        display_bg_control(80);
         draw_image(jb_logo.as_ptr());
-//        ILI9341_Draw_Image(cl_logo.as_ptr(),SCREEN_HORIZONTAL_2 as u8);
     }
+    let mut c: u8;
+    delay_ms(1500);
     unsafe {
-        let mut c: i8 = 0;
+        let mut c: u8 = 0;
         delay_ms(1500);
         while uart_input(&mut c, 1) != 0 {
-            debug_output(&(c as u8) as *const u8, 1);
+            debug_output(&c, 1);
         }
     }
-
 
     match device.connect_to_wifi_if_needed() {
         _ => {}
     };
     loop {
         let arr = device.brains.deskovery_data;
-        unsafe { led_control(true); }
+        led_control(true);
         device.brains.server_data = device.make_post_request(&arr[0..device.brains.data_q_len],
 //                                                             "185.135.234.139", 8000).ok();
                                                              "192.168.0.101", 8000).ok();
-        unsafe { led_control(false); }
+        led_control(false);
         device.brains.data_q_len = 0;
         device.brains.robot_loop();
     }
@@ -124,7 +126,7 @@ pub struct RobotBrains {
 
 impl RobotBrains {
     pub fn robot_loop(&mut self) {
-        robot_idle();
+        idle();
         match self.server_data {
             Some(data) => {
                 //tractor control
@@ -133,7 +135,7 @@ impl RobotBrains {
                 //auto control
 //                self.left_motor = -data.y / 2 + data.x / 2;
 //                self.right_motor = -data.y / 2 - data.x / 2;
-                unsafe { deskovery_motor(self.left_motor, self.right_motor, false); }
+                deskovery_motor(self.left_motor, self.right_motor, false);
                 if data.b1 {
                     self.screen_draw = Self::data_screen_draw;
                 } else if data.b2 {
@@ -169,50 +171,56 @@ impl RobotBrains {
     }
     pub fn rust_screen_draw(&mut self) {
         unsafe {
-            ILI9341_Draw_Image(ferris.as_ptr(), SCREEN_HORIZONTAL_2 as u8);
+            draw_image(ferris.as_ptr());
         }
+//            self.jb_screen_draw();
     }
     pub fn clion_screen_draw(&mut self) {
         unsafe {
-            ILI9341_Draw_Image(cl_logo.as_ptr(), SCREEN_HORIZONTAL_2 as u8);
+            draw_image(cl_logo.as_ptr());
         }
+//            self.jb_screen_draw();
     }
     pub fn jb_screen_draw(&mut self) {
         unsafe {
-            ILI9341_Draw_Image(jb_logo.as_ptr(), SCREEN_HORIZONTAL_2 as u8);
+            draw_image(jb_logo.as_ptr());
         }
     }
 
     pub fn data_screen_draw(&mut self) {
-        unsafe {
-            if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
-                self.old_screen_draw = self.screen_draw;
-                ILI9341_Fill_Screen(WHITE as u16);
-                ILI9341_Draw_Filled_Circle(260, 180, 60, 0xFFE0);
-                ILI9341_Draw_Hollow_Circle(260, 180, 60, 0);
-            }
-            ILI9341_Draw_Filled_Rectangle_Coord(220, 140, 240, 160, alarm_color(PRX_BR));
-            output_data_line(0, 0, "LM: ", || self.left_motor, 5);
-            output_data_line(0, 1, "RM: ", || self.right_motor, 5);
-            output_data_line(0, 2, "RDR: ", || radar_range(), 5);
-            ILI9341_Draw_Filled_Rectangle_Coord(220, 140, 240, 160, alarm_color(PRX_BR));
-            ILI9341_Draw_Filled_Rectangle_Coord(280, 140, 300, 160, alarm_color(PRX_BL));
-            ILI9341_Draw_Filled_Rectangle_Coord(220, 200, 240, 220, alarm_color(PRX_FR));
-            ILI9341_Draw_Filled_Rectangle_Coord(280, 200, 300, 220, alarm_color(PRX_FL));
+        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
+            self.old_screen_draw = self.screen_draw;
+            fill_screen(WHITE  as u16);
+            draw_filled_circle(160, 120, 60, 0xFFE0);
+            draw_hollow_circle(160, 120, 60, 0);
         }
+        output_value(0, 0, || self.left_motor, 4, DARKGREEN as u16, WHITE as u16, 4);
+        output_value(256, 0, || self.right_motor, 4, DARKCYAN as u16, WHITE as u16, 4);
+        let range = radar_range();
+        let color = match range {
+            -1 => LIGHTGREY,
+            0..=300 => RED,
+            301..=500 => NAVY,
+            _ => BLUE
+        } as u16;
+        output_data_line(72, 208, "Radar: ", || range, 5, WHITE as u16, color, 3);
+        draw_filled_rectangle_coord(120, 80, 140, 100, alarm_color(PRX_BR));
+        draw_filled_rectangle_coord(180, 80, 200, 100, alarm_color(PRX_BL));
+        draw_filled_rectangle_coord(120, 140, 140, 160, alarm_color(PRX_FR));
+        draw_filled_rectangle_coord(180, 140, 200, 160, alarm_color(PRX_FL));
     }
 }
 
 impl Port for RobotBrains {
     fn write(&mut self, message: &[u8]) -> PortResult<()> {
         unsafe {
-            uart_output(message.as_ptr() as *const i8, message.len() as i32);
+            uart_output(message.as_ptr(), message.len() as u32);
         }
         Ok(())
     }
 
     fn read(&mut self, buf: &mut [u8]) -> PortResult<usize> {
-        let size = unsafe { uart_input(buf.as_mut_ptr() as *mut i8, buf.len() as i32) };
+        let size = unsafe { uart_input(buf.as_mut_ptr(), buf.len() as u32) };
         if size == 0 {
             self.robot_loop();
         } else {

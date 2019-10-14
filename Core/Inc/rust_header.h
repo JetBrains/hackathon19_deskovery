@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-bool deskovery_motor(int pwrLeft,int pwrRight, bool recovery);
+bool delegate_deskovery_motor(int pwrLeft, int pwrRight, bool recovery);
 
 typedef struct {
     volatile int alarmRatio10 ;
@@ -15,12 +15,12 @@ typedef struct {
 
 extern volatile PrxData prxData;
 
-long left_ticks();
-long right_ticks();
-int radar_range();
+long delegate_left_ticks();
+long delegate_right_ticks();
+int delegate_radar_range();
 
-unsigned long system_ticks();
-void led_control(bool on);
+unsigned long delegate_system_ticks();
+void delegate_led_control(bool on);
 //todo make as u16
 #define BLACK       0x0000
 #define NAVY        0x000F
@@ -47,12 +47,11 @@ void led_control(bool on);
 #define SCREEN_VERTICAL_2		2
 #define SCREEN_HORIZONTAL_2		3
 
-void display_bg_control(int brightness);
+void delegate_display_bg_control(int brightness);
 
 void ILI9341_Fill_Screen(unsigned short Colour);
 void ILI9341_Draw_Colour(unsigned short Colour);
 void ILI9341_Draw_Pixel(unsigned short X,unsigned short Y,unsigned short Colour);
-void ILI9341_Draw_Colour_Burst(unsigned short Colour, unsigned long Size);
 
 
 void ILI9341_Draw_Rectangle(unsigned short X, unsigned short Y, unsigned short Width, unsigned short Height, unsigned short Colour);
@@ -63,8 +62,8 @@ void ILI9341_Draw_Hollow_Circle(unsigned short X, unsigned short Y, unsigned sho
 void ILI9341_Draw_Filled_Circle(unsigned short X, unsigned short Y, unsigned short Radius, unsigned short Colour);
 void ILI9341_Draw_Hollow_Rectangle_Coord(unsigned short X0, unsigned short Y0, unsigned short X1, unsigned short Y1, unsigned short Colour);
 void ILI9341_Draw_Filled_Rectangle_Coord(unsigned short X0, unsigned short Y0, unsigned short X1, unsigned short Y1, unsigned short Colour);
-void ILI9341_Draw_Char(char Character, unsigned char X, unsigned char Y, unsigned short Colour, unsigned short Size, unsigned short Background_Colour);
-void ILI9341_Draw_Text_Len(const char* Text, unsigned char len, unsigned char X, unsigned char Y, unsigned short Colour,unsigned short Size, unsigned short Background_Colour);
+void ILI9341_Draw_Char(char Character, unsigned short X, unsigned short Y, unsigned short Colour, unsigned char Size, unsigned short Background_Colour);
+void ILI9341_Draw_Text_Len(const char* Text, unsigned char len, unsigned short X, unsigned short Y, unsigned short Colour,unsigned char Size, unsigned short Background_Colour);
 void ILI9341_Draw_Filled_Rectangle_Size_Text(unsigned short X0, unsigned short Y0, unsigned short Size_X, unsigned short Size_Y, unsigned short Colour);
 
 //todo make as u8
@@ -78,14 +77,14 @@ extern const char cl_logo[320*240*2];
 //65K colour (2Bytes / Pixel)
 void ILI9341_Draw_Image(const char* Image_Array, unsigned char Orientation);
 
-void delay_ms(long ms);
+void delegate_delay_ms(long ms);
 
 void debug_output(const unsigned char *p, unsigned int len);
 
-void uart_output(const char *p, int len);
-int  uart_input(char *p, int maxLen);
+void uart_output(const unsigned char *p, unsigned int len);
+int  uart_input(unsigned char *p, unsigned int maxLen);
 
-void idle();
+void delegate_idle();
 
 void Error_Handler(void);
 

@@ -24,7 +24,7 @@ static inline void runMotorChannel(int pwr, GPIO_TypeDef *dirPort, uint16_t dirP
     }
 }
 
-bool deskovery_motor(int pwrLeft, int pwrRight, bool recovery) {
+bool delegate_deskovery_motor(int pwrLeft, int pwrRight, bool recovery) {
 //    if(! recovery && prxData.alarm) {//todo recovery
 //        pwrLeft = 0;
 //        pwrRight = 0;
@@ -141,11 +141,11 @@ void HAL_ADCEx_InjectedConvCpltCallback(__unused ADC_HandleTypeDef *hadc) {
     HAL_ADCEx_InjectedStart_IT(&hadc1);
 }
 
-__unused void led_control(bool on) {
+__unused void delegate_led_control(bool on) {
     HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-__unused void delay_ms(long ms) {
+__unused void delegate_delay_ms(long ms) {
     uint32_t tickstart = HAL_GetTick();
     uint32_t wait = ms;
 
@@ -157,19 +157,19 @@ __unused void delay_ms(long ms) {
 
     while((HAL_GetTick() - tickstart) < wait)
     {
-        idle();
+        delegate_idle();
     }
 }
 
-__unused void display_bg_control(int brightness) {
+__unused void delegate_display_bg_control(int brightness) {
     //todo
 }
 
-__unused unsigned long system_ticks() {
+__unused unsigned long delegate_system_ticks() {
     return HAL_GetTick();
 }
 
-long left_ticks() {
+long delegate_left_ticks() {
     long l;
     __disable_irq();
     l = left_ticks_var;
@@ -177,7 +177,7 @@ long left_ticks() {
     return l;
 }
 
-long right_ticks() {
+long delegate_right_ticks() {
     long r;
     __disable_irq();
     r = right_ticks_var;
@@ -204,12 +204,11 @@ __unused void debug_output(const unsigned char *p, unsigned int len) {
     HAL_UART_Transmit(&huart2, (uint8_t *) p, len, 1000);
 }
 
-void idle() {
+void delegate_idle() {
     runRadar();
-    unsigned char buf[4];
 }
 
-__unused int radar_range() {
+__unused int delegate_radar_range() {
     return rangeData.RangeStatus == 0 ? rangeData.RangeMilliMeter : -1;
 }
 
