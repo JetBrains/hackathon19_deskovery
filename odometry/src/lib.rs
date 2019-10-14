@@ -23,6 +23,10 @@ fn cos(x: f64) -> f64 {
     unsafe { cosf64(x) }
 }
 
+fn abs(x: f64) -> f64 {
+    unsafe { fabsf64(x) }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct Position {
     pub x: f64,
@@ -32,11 +36,9 @@ pub struct Position {
 
 impl PartialEq for Position {
     fn eq(&self, other: &Self) -> bool {
-        unsafe {
-            fabsf64(self.x - other.x) < EPS &&
-                fabsf64(self.y - other.y) < EPS &&
-                fabsf64(self.theta - other.theta) < EPS
-        }
+        abs(self.x - other.x) < EPS &&
+            abs(self.y - other.y) < EPS &&
+            abs(self.theta - other.theta) < EPS
     }
 }
 
