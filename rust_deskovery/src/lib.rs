@@ -3,6 +3,9 @@
 #![feature(core_intrinsics)]
 
 mod compat;
+mod data;
+mod odometry;
+mod wifi;
 
 use data::{DeskoveryData, ServerData};
 use wifi::{Device, Port, PortResult};

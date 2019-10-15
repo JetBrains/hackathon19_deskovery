@@ -1,6 +1,3 @@
-#![no_std]
-#![feature(core_intrinsics)]
-
 use core::intrinsics::{cosf64, fabsf64, sinf64};
 
 const PI: f64 = core::f64::consts::PI;

@@ -1,9 +1,7 @@
-#![cfg_attr(not(feature = "std"), no_std)]
-
-use crate::PortError::WriteError;
+use crate::data::ServerData;
 use core::fmt::{Error, Write};
 use core::str::from_utf8;
-use data::ServerData;
+use PortError::WriteError;
 
 // TODO: add some errors
 pub enum PortError {

@@ -1,5 +1,4 @@
-#![no_std]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Default, Copy, Clone)]
 pub struct DeskoveryData {
@@ -15,7 +14,7 @@ pub struct DeskoveryData {
 
 #[derive(Serialize, Deserialize)]
 pub enum RequestType {
-    Move
+    Move,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
