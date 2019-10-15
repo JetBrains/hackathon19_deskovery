@@ -156,7 +156,7 @@ fn adjust_motor(josticAxis: i32) -> i32 {
     if v < 50 {
         0
     } else {
-        -josticAxis.signum() * (200 + (v - 50) * 800 / 1000)
+        -josticAxis.signum() * (200 + (v - 50) * 500 / 1000)
     }
 }
 
@@ -249,7 +249,7 @@ impl RobotBrains {
             4,
         );
         output_value(
-            256,
+            224,
             0,
             || self.right_motor,
             4,
