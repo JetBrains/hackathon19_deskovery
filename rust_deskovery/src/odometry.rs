@@ -91,7 +91,9 @@ impl OdometryComputer {
 
 #[cfg(test)]
 mod tests {
-    use crate::{OdometryComputer, Position, WHEEL_CIRCLE_LEN_MM, WHEEL_TICKS_PER_CIRCLE};
+    use crate::odometry::{
+        OdometryComputer, Position, WHEEL_CIRCLE_LEN_MM, WHEEL_TICKS_PER_CIRCLE,
+    };
 
     fn do_test(left_ticks: i32, right_ticks: i32, expected: Position) {
         let mut odo_computer = OdometryComputer::default();
