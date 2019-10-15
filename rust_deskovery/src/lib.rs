@@ -97,11 +97,21 @@ pub extern "C" fn rust_main() {
     loop {
         let arr = device.brains.deskovery_data;
         led_control(true);
-        device.brains.server_data = device.make_post_request(&arr[0..device.brains.data_q_len],
+
+        let mut final_data = &arr[0..device.brains.data_q_len];
+        let mut data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
+        device.brains.data_q_len = 0;
+        while data_str_result.is_err() {
+            final_data = &final_data[1..final_data.len()];
+            data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
+        }
+
+        let data_str = data_str_result.unwrap();
+
+        device.brains.server_data = device.make_post_request(&data_str,
 //                                                             "185.135.234.139", 8000).ok();
                                                              "192.168.0.101", 8000).ok();
         led_control(false);
-        device.brains.data_q_len = 0;
         device.brains.robot_loop();
     }
 }

@@ -483,6 +483,8 @@ dependencies = [
  "data 0.1.0",
  "image 0.22.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "odometry 0.1.0",
+ "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde-json-core 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "wifi 0.1.0",
 ]
 
