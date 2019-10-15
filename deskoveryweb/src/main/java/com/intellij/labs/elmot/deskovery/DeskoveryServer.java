@@ -7,6 +7,9 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,9 +86,12 @@ public class DeskoveryServer {
             exchange.sendResponseHeaders(404, -1);
             return;
         }
-        exchange.sendResponseHeaders(200, INDEX_HTML.length);
         exchange.getResponseHeaders().add("Content-type", "text/html;charset=utf-8");
         try (OutputStream responseBody = exchange.getResponseBody()) {
+//            final byte[] bytes = Files.readAllBytes(Paths.get("src/main/resource  s/index.html"));
+//            exchange.sendResponseHeaders(200, bytes.length);
+//            responseBody.write(bytes);
+            exchange.sendResponseHeaders(200, INDEX_HTML.length);
             responseBody.write(INDEX_HTML);
         }
     }
