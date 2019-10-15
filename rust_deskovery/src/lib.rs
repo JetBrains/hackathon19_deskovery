@@ -215,20 +215,29 @@ impl RobotBrains {
         }
     }
     pub fn rust_screen_draw(&mut self) {
-        unsafe {
-            draw_image(ferris.as_ptr());
+        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
+            self.old_screen_draw = self.screen_draw;
+            unsafe {
+                draw_image(ferris.as_ptr());
+            }
+            //            self.jb_screen_draw();
         }
-        //            self.jb_screen_draw();
     }
     pub fn clion_screen_draw(&mut self) {
-        unsafe {
-            draw_image(cl_logo.as_ptr());
+        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
+            self.old_screen_draw = self.screen_draw;
+            unsafe {
+                draw_image(cl_logo.as_ptr());
+            }
+            //            self.jb_screen_draw();
         }
-        //            self.jb_screen_draw();
     }
     pub fn jb_screen_draw(&mut self) {
-        unsafe {
-            draw_image(jb_logo.as_ptr());
+        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
+            self.old_screen_draw = self.screen_draw;
+            unsafe {
+                draw_image(jb_logo.as_ptr());
+            }
         }
     }
 
