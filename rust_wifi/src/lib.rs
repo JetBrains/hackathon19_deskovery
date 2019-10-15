@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use data::{ServerData, DeskoveryData};
+use data::{ServerData};
 use core::fmt::{Write, Error};
 use core::str::from_utf8;
 
@@ -119,24 +119,14 @@ impl<T: Port> Device<T> {
         Ok(())
     }
 
-    pub fn make_post_request(&mut self, data: &[DeskoveryData], ip: &str, port: u32) -> PortResult<ServerData> {
+    pub fn make_post_request(&mut self,data_str: &str, ip: &str, port: u32) -> PortResult<ServerData> {
         self.establish_connection(ip, port)?;
-
-        let mut final_data = data;
-        let mut data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
-        while data_str_result.is_err() {
-            final_data = &final_data[1..final_data.len()];
-            data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
-        }
-
-        let data_str = data_str_result.unwrap();
-        let data_bytes = data_str.as_str();
 
         let mut command = [0; 1600];
         let mut write_buf = WriteBuf::new(&mut command);
 
 
-        write!(write_buf, "POST /poll HTTP/1.1\r\nContent-Type: application/json\r\nConnection:close\r\nContent-Length: {}\r\n\r\n{}", data_str.len(), data_str.as_str());
+        write!(write_buf, "POST /poll HTTP/1.1\r\nContent-Type: application/json\r\nConnection:close\r\nContent-Length: {}\r\n\r\n{}", data_str.len(), data_str);
         let command_size = write_buf.count;
         let command_slice = &command[..command_size];
         // Send data
