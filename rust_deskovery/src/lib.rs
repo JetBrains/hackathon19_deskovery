@@ -100,11 +100,11 @@ pub extern "C" fn rust_main() {
 
         let mut final_data = &arr[0..device.brains.data_q_len];
         let mut data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
-        device.brains.data_q_len = 0;
         while data_str_result.is_err() {
             final_data = &final_data[1..final_data.len()];
             data_str_result = serde_json_core::ser::to_string::<[u8; 1500], _>(final_data);
         }
+        device.brains.data_q_len = 0;
 
         let data_str = data_str_result.unwrap();
 
