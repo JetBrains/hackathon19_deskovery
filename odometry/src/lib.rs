@@ -1,10 +1,10 @@
 #![no_std]
 #![feature(core_intrinsics)]
 
-use core::intrinsics::{cosf64, sinf64, fabsf64};
+use core::intrinsics::{cosf64, fabsf64, sinf64};
 
 const PI: f64 = core::f64::consts::PI;
-const EPS: f64 = 0.000001;
+const EPS: f64 = 0.000_001;
 
 const WHEEL_RADIUS_MM: f64 = 35.0;
 const WHEEL_BASE_MM: f64 = 140.0;
@@ -27,7 +27,7 @@ fn abs(x: f64) -> f64 {
     unsafe { fabsf64(x) }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Position {
     pub x: f64,
     pub y: f64,
@@ -36,14 +36,15 @@ pub struct Position {
 
 impl PartialEq for Position {
     fn eq(&self, other: &Self) -> bool {
-        abs(self.x - other.x) < EPS &&
-            abs(self.y - other.y) < EPS &&
-            abs(self.theta - other.theta) < EPS
+        abs(self.x - other.x) < EPS
+            && abs(self.y - other.y) < EPS
+            && abs(self.theta - other.theta) < EPS
     }
 }
 
 impl Eq for Position {}
 
+#[derive(Default)]
 pub struct OdometryComputer {
     position: Position,
     old_left_mm: f64,
@@ -51,14 +52,6 @@ pub struct OdometryComputer {
 }
 
 impl OdometryComputer {
-    pub fn new() -> OdometryComputer {
-        OdometryComputer {
-            position: Position { x: 0.0, y: 0.0, theta: 0.0 },
-            old_left_mm: 0.0,
-            old_right_mm: 0.0,
-        }
-    }
-
     pub fn position(&self) -> Position {
         self.position
     }
@@ -78,16 +71,16 @@ impl OdometryComputer {
         let d_track_avr = (d_right + d_left) / 2.0;
         let d_turn_angle = d_track / WHEEL_BASE_MM;
         let turn_radius = d_track_avr / d_turn_angle;
-        let dx;
-        let dy;
-        if turn_radius.is_infinite() || turn_radius.is_nan() {
-            dx = d_track_avr * cos(self.position.theta);
-            dy = d_track_avr * sin(self.position.theta);
+        let (dx, dy) = if turn_radius.is_infinite() || turn_radius.is_nan() {
+            let dx = d_track_avr * cos(self.position.theta);
+            let dy = d_track_avr * sin(self.position.theta);
+            (dx, dy)
         } else {
             let turn_angle = self.position.theta - PI / 2.0;
-            dx = turn_radius * (cos(turn_angle + d_turn_angle) - cos(turn_angle));
-            dy = turn_radius * (sin(turn_angle + d_turn_angle) - sin(turn_angle));
-        }
+            let dx = turn_radius * (cos(turn_angle + d_turn_angle) - cos(turn_angle));
+            let dy = turn_radius * (sin(turn_angle + d_turn_angle) - sin(turn_angle));
+            (dx, dy)
+        };
         self.position.x += dx;
         self.position.y += dy;
         self.position.theta += d_turn_angle;
@@ -101,10 +94,10 @@ impl OdometryComputer {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Position, OdometryComputer, WHEEL_TICKS_PER_CIRCLE, WHEEL_CIRCLE_LEN_MM};
+    use crate::{OdometryComputer, Position, WHEEL_CIRCLE_LEN_MM, WHEEL_TICKS_PER_CIRCLE};
 
     fn do_test(left_ticks: i32, right_ticks: i32, expected: Position) {
-        let mut odo_computer = OdometryComputer::new();
+        let mut odo_computer = OdometryComputer::default();
         odo_computer.update(left_ticks, right_ticks);
         let actual = odo_computer.position();
         assert_eq!(actual, expected)
@@ -115,7 +108,11 @@ mod tests {
         do_test(
             WHEEL_TICKS_PER_CIRCLE,
             WHEEL_TICKS_PER_CIRCLE,
-            Position { x: WHEEL_CIRCLE_LEN_MM, y: 0.0, theta: 0.0 }
+            Position {
+                x: WHEEL_CIRCLE_LEN_MM,
+                y: 0.0,
+                theta: 0.0,
+            },
         );
     }
 
@@ -124,18 +121,28 @@ mod tests {
         do_test(
             -WHEEL_TICKS_PER_CIRCLE,
             -WHEEL_TICKS_PER_CIRCLE,
-            Position { x: -WHEEL_CIRCLE_LEN_MM, y: 0.0, theta: 0.0 }
+            Position {
+                x: -WHEEL_CIRCLE_LEN_MM,
+                y: 0.0,
+                theta: 0.0,
+            },
         );
     }
 
-
     #[test]
     fn test_forward_twice() {
-        let mut odo_computer = OdometryComputer::new();
+        let mut odo_computer = OdometryComputer::default();
         odo_computer.update(WHEEL_TICKS_PER_CIRCLE, WHEEL_TICKS_PER_CIRCLE);
         odo_computer.update(2 * WHEEL_TICKS_PER_CIRCLE, 2 * WHEEL_TICKS_PER_CIRCLE);
         let actual = odo_computer.position();
-        assert_eq!(actual, Position { x: 2.0 * WHEEL_CIRCLE_LEN_MM, y: 0.0, theta: 0.0 });
+        assert_eq!(
+            actual,
+            Position {
+                x: 2.0 * WHEEL_CIRCLE_LEN_MM,
+                y: 0.0,
+                theta: 0.0
+            }
+        );
     }
 
     #[test]
@@ -143,7 +150,11 @@ mod tests {
         do_test(
             10,
             0,
-            Position { x: 1.485776, y: -0.015769, theta: 6.261958 }
+            Position {
+                x: 1.485776,
+                y: -0.015769,
+                theta: 6.261958,
+            },
         );
     }
 }
