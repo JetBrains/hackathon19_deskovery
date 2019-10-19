@@ -170,14 +170,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "data"
-version = "0.1.0"
-dependencies = [
- "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde-json-core 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "deflate"
 version = "0.7.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -381,10 +373,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "odometry"
-version = "0.1.0"
-
-[[package]]
 name = "peeking_take_while"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -480,12 +468,9 @@ name = "rust_deskovery"
 version = "0.1.0"
 dependencies = [
  "bindgen 0.51.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "data 0.1.0",
  "image 0.22.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "odometry 0.1.0",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde-json-core 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "wifi 0.1.0",
 ]
 
 [[package]]
@@ -655,15 +640,6 @@ version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "wifi"
-version = "0.1.0"
-dependencies = [
- "data 0.1.0",
- "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde-json-core 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

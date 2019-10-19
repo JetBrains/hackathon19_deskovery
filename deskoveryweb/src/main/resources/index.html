@@ -121,13 +121,13 @@
                 obstacles.push(obstacle);
             }
         }
-        let linearSize = Math.max(100, Math.sqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY))) / 1.2;
+        let linearSize = Math.sqrt(Math.max(10000, (maxX - minX) * (maxX - minX), (maxY - minY) * (maxY - minY)));
         const bounds = {
             ctx: ctx,
             canvas: ctx.canvas,
-            width: linearSize,
+            width: linearSize * 1.2,
             left: minX - linearSize / 10,
-            height: linearSize,
+            height: linearSize * 1.2,
             top: maxY + linearSize / 10,
             screenX: function (x) {
                 return this.canvas.width * (x - this.left) / this.width;

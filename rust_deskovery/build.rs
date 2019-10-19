@@ -4,8 +4,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 fn generate_rust_bindings(out_path: PathBuf) {
-    let result_path = out_path.join("\
-    descovery_bindings.rs");
+    let result_path = out_path.join(
+        "\
+         descovery_bindings.rs",
+    );
 
     let includes = [
         "/usr/local/lib/gcc/arm-none-eabi/7.3.1/include",
@@ -29,7 +31,6 @@ fn generate_rust_bindings(out_path: PathBuf) {
         .expect("Couldn't write bindings!");
 }
 
-#[allow(dead_code)]
 enum OutputMode {
     NetPBM,
     ScreenBytes,
@@ -104,31 +105,35 @@ fn get_image_screen_pixels<P: AsRef<Path>>(
 }
 
 fn generate_image_data(out_path: PathBuf) {
-    let lines = ["images/clion_logo.png", "images/rust_logo.png", "images/clion_logo_norm.png"]
-        .into_iter()
-        .map(|image_path| {
-            let image_bytes = get_image_screen_pixels(
-                image_path,
-                DISPLAY_WIDTH,
-                DISPLAY_HEIGHT,
-                OutputMode::ScreenBytes,
-            );
+    let lines = [
+        "images/clion_logo.png",
+        "images/rust_logo.png",
+        "images/clion_logo_norm.png",
+    ]
+    .into_iter()
+    .map(|image_path| {
+        let image_bytes = get_image_screen_pixels(
+            image_path,
+            DISPLAY_WIDTH,
+            DISPLAY_HEIGHT,
+            OutputMode::ScreenBytes,
+        );
 
-            let separator_index = image_path.find('/').unwrap();
-            let extension_index = image_path.rfind('.').unwrap();
-            let variable_name = format!(
-                "{}_BYTES",
-                &image_path[separator_index + 1..extension_index]
-            )
-            .to_uppercase();
-            format!(
-                "pub const {}: [u8; {}] = {:?};",
-                variable_name,
-                image_bytes.len(),
-                image_bytes
-            )
-        })
-        .collect::<Vec<_>>();
+        let separator_index = image_path.find('/').unwrap();
+        let extension_index = image_path.rfind('.').unwrap();
+        let variable_name = format!(
+            "{}_BYTES",
+            &image_path[separator_index + 1..extension_index]
+        )
+        .to_uppercase();
+        format!(
+            "pub const {}: [u8; {}] = {:?};",
+            variable_name,
+            image_bytes.len(),
+            image_bytes
+        )
+    })
+    .collect::<Vec<_>>();
 
     fs::write(out_path.join("generated_images.rs"), lines.join("\n")).unwrap()
 }
