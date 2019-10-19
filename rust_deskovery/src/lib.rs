@@ -1,6 +1,6 @@
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 #![allow(non_camel_case_types, non_upper_case_globals, non_snake_case)]
-#![feature(core_intrinsics)]
+#![feature(lang_items, core_intrinsics)]
 
 mod compat;
 mod data;
@@ -20,6 +20,10 @@ use compat::{
 use compat::{display_text_xy, idle, PRX_BL, PRX_BR, PRX_FL, PRX_FR};
 use core::f64::consts::PI;
 use odometry::OdometryComputer;
+
+#[cfg(not(test))]
+#[lang = "eh_personality"]
+extern "C" fn eh_personality() {}
 
 fn output_data_line<F>(
     x: u16,
