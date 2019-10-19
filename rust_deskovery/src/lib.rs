@@ -11,14 +11,15 @@ use data::{DeskoveryData, ServerData};
 use wifi::{Device, Port, PortResult};
 
 use compat::{
-    cl_logo, debug_output, delay_ms, deskovery_motor, display_bg_control, draw_filled_circle,
-    draw_filled_rectangle_coord, draw_hollow_circle, draw_image, ferris, fill_screen, jb_logo,
+    debug_output, delay_ms, deskovery_motor, display_bg_control,
+    draw_filled_rectangle_coord, draw_image, jb_logo,
     led_control, left_ticks, prxData, radar_range, right_ticks, system_ticks, uart_input,
-    uart_output, BLUE, DARKCYAN, DARKGREEN, LIGHTGREY, NAVY, RED, WHITE,
+    uart_output, BLUE, DARKGREEN, LIGHTGREY, NAVY, RED, WHITE,
 };
 use compat::{display_text_xy, idle, PRX_BL, PRX_BR, PRX_FL, PRX_FR};
 use core::f64::consts::PI;
 use odometry::OdometryComputer;
+use crate::compat::{screen_back, BLACK, GREEN};
 
 fn output_data_line<F>(
     x: u16,
@@ -108,9 +109,7 @@ pub extern "C" fn rust_main() {
         server_data: None,
         left_motor: 0,
         right_motor: 0,
-        sample_timestamp: 0,
-        old_screen_draw: RobotBrains::clion_screen_draw,
-        screen_draw: RobotBrains::data_screen_draw,
+        sample_timestamp: 0
     };
     let mut device = Device::new(port);
     display_bg_control(80);
@@ -118,6 +117,9 @@ pub extern "C" fn rust_main() {
         draw_image(jb_logo.as_ptr());
     }
     delay_ms(1500);
+    unsafe {
+        draw_image(*screen_back);
+    }
     unsafe {
         let mut c: u8 = 0;
         delay_ms(1500);
@@ -167,9 +169,7 @@ pub struct RobotBrains {
     server_data: Option<ServerData>,
     left_motor: i32,
     right_motor: i32,
-    sample_timestamp: u32,
-    screen_draw: fn(&mut Self),
-    old_screen_draw: fn(&mut Self),
+    sample_timestamp: u32
 }
 
 impl RobotBrains {
@@ -183,17 +183,8 @@ impl RobotBrains {
             //                self.left_motor = -data.y / 2 + data.x / 2;
             //                self.right_motor = -data.y / 2 - data.x / 2;
             deskovery_motor(self.left_motor, self.right_motor, false);
-            if data.b1 {
-                self.screen_draw = Self::data_screen_draw;
-            } else if data.b2 {
-                self.screen_draw = Self::clion_screen_draw;
-            } else if data.b3 {
-                self.screen_draw = Self::rust_screen_draw;
-            } else if data.b4 {
-                self.screen_draw = Self::jb_screen_draw;
-            }
         }
-        (self.screen_draw)(self);
+        self.screen_draw();
         unsafe {
             self.odo_computer.update(left_ticks(), right_ticks());
             if (system_ticks() - self.sample_timestamp) > 250 {
@@ -214,70 +205,37 @@ impl RobotBrains {
             }
         }
     }
-    pub fn rust_screen_draw(&mut self) {
-        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
-            self.old_screen_draw = self.screen_draw;
-            unsafe {
-                draw_image(ferris.as_ptr());
-            }
-            //            self.jb_screen_draw();
-        }
-    }
-    pub fn clion_screen_draw(&mut self) {
-        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
-            self.old_screen_draw = self.screen_draw;
-            unsafe {
-                draw_image(cl_logo.as_ptr());
-            }
-            //            self.jb_screen_draw();
-        }
-    }
     pub fn jb_screen_draw(&mut self) {
-        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
-            self.old_screen_draw = self.screen_draw;
-            unsafe {
-                draw_image(jb_logo.as_ptr());
-            }
+        unsafe {
+            draw_image(jb_logo.as_ptr());
         }
     }
 
-    pub fn data_screen_draw(&mut self) {
-        if self.old_screen_draw as *const u8 != self.screen_draw as *const u8 {
-            self.old_screen_draw = self.screen_draw;
-            fill_screen(WHITE as u16);
-            draw_filled_circle(160, 120, 60, 0xFFE0);
-            draw_hollow_circle(160, 120, 60, 0);
-        }
-        output_value(
-            0,
-            0,
-            || self.left_motor,
-            4,
-            DARKGREEN as u16,
-            WHITE as u16,
-            4,
-        );
-        output_value(
-            224,
-            0,
-            || self.right_motor,
-            4,
-            DARKCYAN as u16,
-            WHITE as u16,
-            4,
-        );
+    pub fn screen_draw(&mut self) {
+        output_data_line(120, 155, "L: ",
+                         || self.left_motor, 4,
+                         RED as u16, WHITE as u16, 2);
+        output_data_line(220, 155, "R: ",
+                         || self.right_motor, 4,
+                         DARKGREEN as u16, WHITE as u16, 2);
         let range = radar_range();
         let color = match range {
             -1 => LIGHTGREY,
             0..=300 => RED,
-            301..=500 => NAVY,
-            _ => BLUE,
+            301..=500 => BLUE,
+            _ => NAVY,
         } as u16;
-        output_data_line(72, 208, "Radar: ", || range, 5, WHITE as u16, color, 3);
-        draw_filled_rectangle_coord(120, 80, 140, 100, alarm_color(PRX_BR));
-        draw_filled_rectangle_coord(180, 80, 200, 100, alarm_color(PRX_BL));
-        draw_filled_rectangle_coord(120, 140, 140, 160, alarm_color(PRX_FR));
-        draw_filled_rectangle_coord(180, 140, 200, 160, alarm_color(PRX_FL));
+        output_data_line(122, 212, "Radar: ", || range, 5, WHITE as u16, color, 3);
+        let position = self.odo_computer.position();
+
+        output_data_line(122, 175, "P: ", || position.x as i32, 6, BLACK as u16, WHITE as u16, 2);
+        output_data_line(230, 175, ", ", || position.y as i32, 6, BLACK as u16, WHITE as u16, 2);
+        output_data_line(122, 191, "     B: ", || (position.theta * 180.0 / PI) as i32, 4, BLACK as u16, WHITE as u16, 2);
+
+        draw_filled_rectangle_coord(35, 165, 45, 175, alarm_color(PRX_BR));
+        draw_filled_rectangle_coord(85, 165, 95, 175, alarm_color(PRX_BL));
+        draw_filled_rectangle_coord(35, 210, 45, 220, alarm_color(PRX_FR));
+        draw_filled_rectangle_coord(85, 210, 95, 220, alarm_color(PRX_FL));
     }
 }
 

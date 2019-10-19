@@ -235,13 +235,10 @@ extern "C" {
     );
 }
 extern "C" {
-    pub static mut ferris: [crate::compat::libc::c_char; 153600usize];
-}
-extern "C" {
     pub static mut jb_logo: [crate::compat::libc::c_char; 153600usize];
 }
 extern "C" {
-    pub static mut cl_logo: [crate::compat::libc::c_char; 153600usize];
+    pub static mut screen_back: *const *const crate::compat::libc::c_char;
 }
 extern "C" {
     pub fn ILI9341_Draw_Image(

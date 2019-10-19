@@ -3,7 +3,10 @@
 //
 #include "main.h"
 #include "ILI9341_STM32_Driver.h"
+#include "screen.h"
 
+static const char * __screen_back_data = (char*)&(gimp_image.pixel_data[1]);
+const char *const * screen_back = &__screen_back_data;
 extern TIM_HandleTypeDef HMOTOR_TIM;
 extern TIM_HandleTypeDef EL_TIM;
 extern TIM_HandleTypeDef ER_TIM;
