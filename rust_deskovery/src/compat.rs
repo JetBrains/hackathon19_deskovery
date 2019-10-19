@@ -15,6 +15,7 @@ pub mod libc {
 
 include!("descovery_bindings.rs");
 
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     //    let mut host_stderr = HStderr::new();
