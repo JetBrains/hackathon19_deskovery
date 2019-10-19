@@ -69,9 +69,8 @@ void ILI9341_Draw_Filled_Rectangle_Size_Text(unsigned short X0, unsigned short Y
 //todo make as u8
 #define HORIZONTAL_IMAGE	0
 #define VERTICAL_IMAGE		1
-extern const char ferris[320*240*2];
 extern const char jb_logo[320*240*2];
-extern const char cl_logo[320*240*2];
+extern const char * const * screen_back;
 
 //USING CONVERTER: http://www.digole.com/tools/PicturetoC_Hex_converter.php
 //65K colour (2Bytes / Pixel)
