@@ -7,6 +7,7 @@
 extern TIM_HandleTypeDef HMOTOR_TIM;
 extern TIM_HandleTypeDef EL_TIM;
 extern TIM_HandleTypeDef ER_TIM;
+extern TIM_HandleTypeDef htim1;
 extern ADC_HandleTypeDef hadc1;
 static volatile int64_t left_ticks_var = 0;
 static volatile int64_t right_ticks_var = 0;
@@ -72,7 +73,6 @@ void setupSensor(VL53L1_DEV dev) {
     status += VL53L1_SetMeasurementTimingBudgetMicroSeconds(dev, 10000);
     status += VL53L1_SetInterMeasurementPeriodMilliSeconds(dev, 0);
 
-
 //  status = VL53L1X_SetOffset(dev,20); /* offset compensation in mm */
 //  status = VL53L1X_SetROI(dev, 16, 16); /* minimum ROI 4,4 */
 //	status = VL53L1X_CalibrateOffset(dev, 140, &offset); /* may take few second to perform the offset cal*/
@@ -86,6 +86,8 @@ void setupSensor(VL53L1_DEV dev) {
 void deskoveryInit(void) {
     HAL_TIM_Encoder_Start(&EL_TIM, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&ER_TIM, TIM_CHANNEL_ALL);
+    HAL_TIM_Base_Start(&htim1);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
     setupSensor(&centerSensor);
     ILI9341_Init();
     setupWifi();
@@ -162,7 +164,7 @@ __unused void delegate_delay_ms(long ms) {
 }
 
 __unused void delegate_display_bg_control(int brightness) {
-    //todo
+    __HAL_TIM_SET_AUTORELOAD(&htim1, brightness);
 }
 
 __unused unsigned long delegate_system_ticks() {
