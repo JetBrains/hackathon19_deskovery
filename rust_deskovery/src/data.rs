@@ -12,11 +12,6 @@ pub struct DeskoveryData {
     pub dto: i32,
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum RequestType {
-    Move,
-}
-
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct ServerData {
     pub x: i32,
