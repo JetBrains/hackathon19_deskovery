@@ -12,7 +12,6 @@ crate-type = ["staticlib", "rlib"]
 
 [build-dependencies]
 bindgen = "0.51"
-image = "0.22"
 
 [dependencies]
 serde = { version = "1.0", default-features = false, features = ["derive"] }
