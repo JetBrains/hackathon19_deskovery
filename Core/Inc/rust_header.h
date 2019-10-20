@@ -1,7 +1,8 @@
 #ifndef HACKATHON19_DESKOVERY_RUST_HEADER_H
 #define HACKATHON19_DESKOVERY_RUST_HEADER_H
 
-#include <stdbool.h>
+// use a copied header from arm-none-eabi to avoid enforcing Rust to look for those files
+#include "stdbool.h"
 
 bool delegate_deskovery_motor(int pwrLeft, int pwrRight, bool recovery);
 
