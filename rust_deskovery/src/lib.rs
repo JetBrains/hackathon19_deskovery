@@ -15,11 +15,11 @@ use compat::{
     draw_filled_rectangle_coord, draw_image, jb_logo,
     led_control, left_ticks, prxData, radar_range, right_ticks, system_ticks, uart_input,
     uart_output, BLUE, DARKGREEN, LIGHTGREY, NAVY, RED, WHITE,
+    screen_back, BLACK
 };
 use compat::{display_text_xy, idle, PRX_BL, PRX_BR, PRX_FL, PRX_FR};
 use core::f64::consts::PI;
 use odometry::OdometryComputer;
-use crate::compat::{screen_back, BLACK, GREEN};
 
 fn output_data_line<F>(
     x: u16,
@@ -114,13 +114,6 @@ pub extern "C" fn rust_main() {
     let mut device = Device::new(port);
     display_bg_control(80);
     unsafe {
-        draw_image(jb_logo.as_ptr());
-    }
-    delay_ms(1500);
-    unsafe {
-        draw_image(*screen_back);
-    }
-    unsafe {
         let mut c: u8 = 0;
         delay_ms(1500);
         while uart_input(&mut c, 1) != 0 {
@@ -131,6 +124,9 @@ pub extern "C" fn rust_main() {
     match device.connect_to_wifi_if_needed() {
         _ => {}
     };
+    unsafe {
+        draw_image(*screen_back);
+    }
     loop {
         let arr = device.brains.deskovery_data;
         led_control(true);
