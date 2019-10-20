@@ -87,13 +87,15 @@ void setupSensor(VL53L1_DEV dev) {
 
 
 void deskoveryInit(void) {
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    ILI9341_Init();
     HAL_TIM_Encoder_Start(&EL_TIM, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&ER_TIM, TIM_CHANNEL_ALL);
     HAL_TIM_Base_Start(&htim1);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    ILI9341_Draw_Image(jb_logo, SCREEN_HORIZONTAL_2);
     setupSensor(&centerSensor);
-    ILI9341_Init();
     setupWifi();
+    HAL_Delay(1000);
 }
 
 void deskoveryReadEncoders() {
