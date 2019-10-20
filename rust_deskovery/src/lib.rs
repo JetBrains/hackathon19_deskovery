@@ -1,5 +1,4 @@
 #![cfg_attr(not(test), no_std)]
-#![allow(non_camel_case_types, non_upper_case_globals, non_snake_case)]
 #![feature(lang_items, core_intrinsics)]
 
 mod compat;
@@ -18,8 +17,8 @@ fn output_data_line<F>(
     x: u16,
     y: u16,
     label: &str,
-    dataGetter: F,
-    dataLen: usize,
+    data_getter: F,
+    data_len: usize,
     color: u16,
     bg_color: u16,
     size: u8,
@@ -30,8 +29,8 @@ fn output_data_line<F>(
     output_value(
         x + label.len() as u16 * 6 * size as u16, /*todo constant font width*/
         y,
-        dataGetter,
-        dataLen,
+        data_getter,
+        data_len,
         color,
         bg_color,
         size,
@@ -41,8 +40,8 @@ fn output_data_line<F>(
 fn output_value<F>(
     x: u16,
     y: u16,
-    dataGetter: F,
-    dataLen: usize,
+    data_getter: F,
+    data_len: usize,
     color: u16,
     bg_color: u16,
     size: u8,
@@ -50,9 +49,9 @@ fn output_value<F>(
     F: FnOnce() -> i32,
 {
     let mut buf: [u8; 20] = [0; 20];
-    let strCenter = buf.len() / 2;
-    let mut index = strCenter;
-    let mut val = dataGetter();
+    let str_center = buf.len() / 2;
+    let mut index = str_center;
+    let mut val = data_getter();
     let sign = val < 0;
     if sign {
         val = -val;
@@ -69,13 +68,13 @@ fn output_value<F>(
         index -= 1;
         buf[index] = b'-';
     }
-    for i in strCenter..(index + dataLen) {
+    for i in str_center..(index + data_len) {
         buf[i] = 32;
     }
     display_text_xy(
         x,
         y,
-        core::str::from_utf8(&buf[index..(index + dataLen)]).unwrap(),
+        core::str::from_utf8(&buf[index..(index + data_len)]).unwrap(),
         color,
         bg_color,
         size,
@@ -142,12 +141,12 @@ pub extern "C" fn rust_main() {
     }
 }
 
-fn adjust_motor(josticAxis: i32) -> i32 {
-    let v = josticAxis.abs();
+fn adjust_motor(controller_axis: i32) -> i32 {
+    let v = controller_axis.abs();
     if v < 50 {
         0
     } else {
-        -josticAxis.signum() * (200 + (v - 50) * 500 / 1000)
+        -controller_axis.signum() * (200 + (v - 50) * 500 / 1000)
     }
 }
 
