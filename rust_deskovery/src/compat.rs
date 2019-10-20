@@ -13,7 +13,7 @@ pub mod libc {
     //    pub type c_double = f64;
 }
 
-include!("descovery_bindings.rs");
+include!("compat/descovery_bindings.rs");
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -28,6 +28,10 @@ fn panic(_info: &PanicInfo) -> ! {
         }
     }
 }
+
+#[cfg(not(test))]
+#[lang = "eh_personality"]
+extern "C" fn eh_personality() {}
 
 pub fn display_text_xy(x: u16, y: u16, s: &str, color: u16, bg_color: u16, size: u8) {
     unsafe {

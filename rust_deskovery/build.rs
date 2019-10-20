@@ -1,11 +1,8 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-fn generate_rust_bindings(out_path: PathBuf) {
-    let result_path = out_path.join(
-        "\
-         descovery_bindings.rs",
-    );
+fn generate_rust_bindings<P: AsRef<Path>>(out_path: P) {
+    let result_path = out_path.as_ref().join("descovery_bindings.rs");
 
     let includes = [
         "/usr/local/lib/gcc/arm-none-eabi/7.3.1/include",
@@ -30,9 +27,15 @@ fn generate_rust_bindings(out_path: PathBuf) {
 }
 
 fn main() {
-    let out_path = PathBuf::from("src");
+    let out_path = PathBuf::from("src/compat");
+    if !out_path.exists() {
+        std::fs::create_dir_all(&out_path).expect(&format!(
+            "Failed to create an output directory: {:?}",
+            out_path
+        ));
+    }
 
     if env::var("TARGET").unwrap() == "thumbv7em-none-eabihf" {
-        generate_rust_bindings(out_path.clone());
+        generate_rust_bindings(&out_path);
     }
 }

@@ -10,20 +10,9 @@ mod wifi;
 use data::{DeskoveryData, ServerData};
 use wifi::{Device, Port, PortResult};
 
-use compat::{
-    debug_output, delay_ms, deskovery_motor, display_bg_control,
-    draw_filled_rectangle_coord, draw_image, jb_logo,
-    led_control, left_ticks, prxData, radar_range, right_ticks, system_ticks, uart_input,
-    uart_output, BLUE, DARKGREEN, LIGHTGREY, NAVY, RED, WHITE,
-    screen_back, BLACK
-};
-use compat::{display_text_xy, idle, PRX_BL, PRX_BR, PRX_FL, PRX_FR};
+use compat::*;
 use core::f64::consts::PI;
 use odometry::OdometryComputer;
-
-#[cfg(not(test))]
-#[lang = "eh_personality"]
-extern "C" fn eh_personality() {}
 
 fn output_data_line<F>(
     x: u16,
@@ -113,7 +102,7 @@ pub extern "C" fn rust_main() {
         server_data: None,
         left_motor: 0,
         right_motor: 0,
-        sample_timestamp: 0
+        sample_timestamp: 0,
     };
     let mut device = Device::new(port);
     display_bg_control(80);
@@ -169,7 +158,7 @@ pub struct RobotBrains {
     server_data: Option<ServerData>,
     left_motor: i32,
     right_motor: i32,
-    sample_timestamp: u32
+    sample_timestamp: u32,
 }
 
 impl RobotBrains {
@@ -212,12 +201,26 @@ impl RobotBrains {
     }
 
     pub fn screen_draw(&mut self) {
-        output_data_line(120, 155, "L: ",
-                         || self.left_motor, 4,
-                         RED as u16, WHITE as u16, 2);
-        output_data_line(220, 155, "R: ",
-                         || self.right_motor, 4,
-                         DARKGREEN as u16, WHITE as u16, 2);
+        output_data_line(
+            120,
+            155,
+            "L: ",
+            || self.left_motor,
+            4,
+            RED as u16,
+            WHITE as u16,
+            2,
+        );
+        output_data_line(
+            220,
+            155,
+            "R: ",
+            || self.right_motor,
+            4,
+            DARKGREEN as u16,
+            WHITE as u16,
+            2,
+        );
         let range = radar_range();
         let color = match range {
             -1 => LIGHTGREY,
@@ -228,9 +231,36 @@ impl RobotBrains {
         output_data_line(122, 212, "Radar: ", || range, 5, WHITE as u16, color, 3);
         let position = self.odo_computer.position();
 
-        output_data_line(122, 175, "P: ", || position.x as i32, 6, BLACK as u16, WHITE as u16, 2);
-        output_data_line(230, 175, ", ", || position.y as i32, 6, BLACK as u16, WHITE as u16, 2);
-        output_data_line(122, 191, "     B: ", || (position.theta * 180.0 / PI) as i32, 4, BLACK as u16, WHITE as u16, 2);
+        output_data_line(
+            122,
+            175,
+            "P: ",
+            || position.x as i32,
+            6,
+            BLACK as u16,
+            WHITE as u16,
+            2,
+        );
+        output_data_line(
+            230,
+            175,
+            ", ",
+            || position.y as i32,
+            6,
+            BLACK as u16,
+            WHITE as u16,
+            2,
+        );
+        output_data_line(
+            122,
+            191,
+            "     B: ",
+            || (position.theta * 180.0 / PI) as i32,
+            4,
+            BLACK as u16,
+            WHITE as u16,
+            2,
+        );
 
         draw_filled_rectangle_coord(35, 165, 45, 175, alarm_color(PRX_BR));
         draw_filled_rectangle_coord(85, 165, 95, 175, alarm_color(PRX_BL));
