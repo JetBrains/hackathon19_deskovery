@@ -17,6 +17,11 @@ static inline unsigned int incIndex(volatile unsigned int *idx) {
 }
 
 void setupWifi() {
+    HAL_GPIO_WritePin(ESP8266_EN_GPIO_Port, ESP8266_EN_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ESP8266_RST_GPIO_Port, ESP8266_RST_Pin, GPIO_PIN_SET);
+    HAL_Delay(300);
+    uint8_t c[3];
+    HAL_UART_Receive(&huart3, c, 3, 2);
     __HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
     __HAL_UART_ENABLE_IT(&huart3, UART_IT_ERR);
 }

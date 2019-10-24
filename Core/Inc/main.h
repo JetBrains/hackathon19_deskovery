@@ -109,6 +109,10 @@ void deskoveryReadEncoders(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define ESP8266_EN_Pin GPIO_PIN_12
+#define ESP8266_EN_GPIO_Port GPIOC
+#define ESP8266_RST_Pin GPIO_PIN_2
+#define ESP8266_RST_GPIO_Port GPIOD
 #define LCD_DC_Pin GPIO_PIN_4
 #define LCD_DC_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

@@ -93,9 +93,9 @@ void deskoveryInit(void) {
     HAL_TIM_Encoder_Start(&ER_TIM, TIM_CHANNEL_ALL);
     HAL_TIM_Base_Start(&htim1);
     ILI9341_Draw_Image(jb_logo, SCREEN_HORIZONTAL_2);
+    HAL_Delay(1000);
     setupSensor(&centerSensor);
     setupWifi();
-    HAL_Delay(1000);
 }
 
 void deskoveryReadEncoders() {
