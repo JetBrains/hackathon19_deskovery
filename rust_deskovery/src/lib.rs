@@ -112,13 +112,13 @@ pub extern "C" fn rust_main() {
             debug_output(&c, 1);
         }
     }
+    unsafe {
+        draw_image(*screen_back);
+    }
 
     match device.connect_to_wifi_if_needed() {
         _ => {}
     };
-    unsafe {
-        draw_image(*screen_back);
-    }
     loop {
         let arr = device.brains.deskovery_data;
         led_control(true);
@@ -134,7 +134,7 @@ pub extern "C" fn rust_main() {
         let data_str = data_str_result.unwrap();
 
         device.brains.server_data = device
-            .make_post_request(&data_str, "192.168.0.101", 8000)
+            .make_post_request(&data_str, "192.168.8.100", 8000)
             .ok();
         led_control(false);
         device.brains.robot_loop();
