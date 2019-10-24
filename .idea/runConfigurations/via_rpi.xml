@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="via rpi" type="com.jetbrains.cidr.embedded.customgdbserver.type" factoryName="com.jetbrains.cidr.embedded.customgdbserver.factory" PROGRAM_PARAMS="pi@192.168.0.19 &quot;sudo killall openocd; sleep 1; sudo openocd -f /home/pi/openocd-test/deskovery.cfg&quot;" PASS_PARENT_ENVS_2="true" PROJECT_NAME="l4-deskovery" TARGET_NAME="l4-deskovery.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="l4-deskovery" RUN_TARGET_NAME="l4-deskovery.elf">
-    <custom-gdb-server version="1" gdb-connect="tcp:192.168.0.19:3333" executable="C:\Program Files\PuTTY\plink.exe" warmup-ms="1200" download-type="ALWAYS" reset-cmd="monitor reset init" />
+  <configuration default="false" name="via rpi" type="com.jetbrains.cidr.embedded.customgdbserver.type" factoryName="com.jetbrains.cidr.embedded.customgdbserver.factory" PROGRAM_PARAMS="pi@192.168.8.100 &quot;sudo killall openocd; sleep 1; sudo openocd -f /home/pi/descovery/deskovery.cfg&quot;" PASS_PARENT_ENVS_2="true" PROJECT_NAME="l4-deskovery" TARGET_NAME="l4-deskovery.elf" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="l4-deskovery" RUN_TARGET_NAME="l4-deskovery.elf">
+    <custom-gdb-server version="1" gdb-connect="tcp:192.168.8.100:3333" executable="C:\Program Files\PuTTY\plink.exe" warmup-ms="2200" download-type="ALWAYS" reset-cmd="monitor reset init" />
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>

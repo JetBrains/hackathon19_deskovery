@@ -115,7 +115,7 @@ impl<T: Port> Device<T> {
         };
 
         let size = self.brains.command(
-            b"AT+CWJAP=\"ELM NET\",\"deskoverynet\"",
+            b"AT+CWJAP=\"DESKOVERY\",\"deskoverynet\"",
             &mut self.buf[..],
             &["OK"],
         )?;
