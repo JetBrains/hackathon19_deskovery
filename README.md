@@ -14,4 +14,4 @@ The firmware runs a bot equipped with:
  * ToF distance sensor vl53l1x
  * LCD screen
 
-![Bot](bot.jpg)
+![Bot](Bot.jpg)
